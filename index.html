@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>家具型錄｜永美家居</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500&family=Noto+Serif+TC:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F7F4EE;--paper:#EFE9DE;--line:#D9CFBF;--accent:#6B4C3B;--head:#5C3D2E;--ink:#3A2418;--soft:#7A6656;--err:#A23B2A}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.7 "Noto Sans TC",sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+img{display:block;max-width:100%}
+h1,h2,h3{font-family:"Noto Serif TC",serif;font-weight:700;margin:0;line-height:1.3}
+a{color:var(--accent)}
+.wrap{max-width:1240px;margin:auto;padding:0 16px}
+header.top{padding:40px 0 20px}
+header.top h1{font-size:clamp(34px,6vw,64px);color:var(--head);letter-spacing:.02em}
+header.top p{margin:10px 0 0;max-width:40em;color:var(--soft)}
+.filters{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 0}
+.filters .wrap{display:flex;gap:6px;overflow-x:auto;align-items:center}
+.pill{flex:none;background:none;border:1px solid transparent;padding:6px 14px;border-radius:999px;display:inline-flex;align-items:center;gap:6px}
+.pill[aria-pressed=true]{background:var(--head);color:#fff}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.cartbtn{flex:none;margin-left:auto;background:var(--accent);color:#fff;border:0;padding:7px 16px;border-radius:999px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:36px 20px;padding:28px 0 64px;align-items:start}
+.card{all:unset;display:block;cursor:pointer}
+.card:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.photo{aspect-ratio:4/5;background:var(--paper);overflow:hidden;position:relative}
+.photo img{width:100%;height:100%;object-fit:cover}
+.cattag{position:absolute;left:0;top:12px;color:#fff;font-size:12px;padding:2px 10px;letter-spacing:.08em}
+.card h2{font-size:20px;margin-top:12px}
+.meta{color:var(--soft);font-size:14px}
+.price{font-weight:500}
+.staffprice{color:var(--accent);font-weight:500}
+dialog{border:0;padding:0;background:var(--bg);color:var(--ink);max-width:min(1040px,100vw);width:100%;max-height:100dvh}
+dialog::backdrop{background:rgba(58,36,24,.55)}
+.detail{display:grid;grid-template-columns:1.15fr 1fr}
+.stage{background:var(--paper);min-width:0}
+.stage .main{aspect-ratio:4/5;width:100%;object-fit:contain}
+.thumbs{display:flex;gap:6px;overflow-x:auto;padding:8px}
+.thumbs button{flex:none;padding:0;border:2px solid transparent;background:none;width:60px;height:60px}
+.thumbs button[aria-current=true]{border-color:var(--accent)}
+.thumbs img{width:100%;height:100%;object-fit:cover}
+.panel{padding:24px;min-width:0;position:relative}
+.panel h2{font-size:28px;padding-right:44px;color:var(--head)}
+.x{position:absolute;right:12px;top:12px;width:40px;height:40px;background:none;border:0;font-size:24px;line-height:1}
+fieldset{border:0;padding:0;margin:18px 0 0}
+legend{padding:0;font-size:14px;color:var(--soft);margin-bottom:6px}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt{border:1px solid var(--line);background:none;padding:6px 12px;min-height:40px;text-align:left}
+.opt[aria-pressed=true]{border-color:var(--head);box-shadow:inset 0 0 0 1px var(--head)}
+.pricetag{font-family:"Noto Sans TC",sans-serif;font-size:13px;font-weight:500;color:var(--accent);border:1px solid var(--accent);padding:1px 6px;margin-left:8px;vertical-align:middle;letter-spacing:.05em}
+.bigprice{font-family:"Noto Serif TC",serif;font-size:30px;margin-top:18px}
+.sub{color:var(--soft);font-size:14px}
+.qty{display:flex;gap:10px;align-items:stretch;margin-top:14px}
+.qty input{width:76px;border:1px solid var(--line);background:#fff;padding:8px;text-align:center}
+.primary{background:var(--head);color:#fff;border:0;padding:11px 20px;min-height:44px}
+.primary[disabled]{opacity:.5;cursor:not-allowed}
+.ghost{background:none;border:1px solid var(--line);padding:8px 14px}
+.intro{margin:18px 0 0;font-size:15px}
+.feat{margin:12px 0 0;padding-left:1.2em;font-size:15px}
+.spec{margin:14px 0 0;padding:0;list-style:none;font-size:14px;color:var(--soft)}
+.spec b{color:var(--ink);font-weight:500}
+.info{border-top:1px solid var(--line);padding:28px 0 48px;color:var(--soft);font-size:15px}
+.info h2{font-size:20px;color:var(--ink);margin-bottom:10px}
+.info .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.info h3{font-size:16px;color:var(--ink)}
+.info ul{margin:6px 0 0;padding-left:18px}
+.cart{padding:24px;max-width:580px;margin:auto;position:relative}
+.cart h2{font-size:26px;color:var(--head);margin-bottom:12px}
+.row{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.row small{color:var(--soft)}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;font-size:14px}
+label.f{display:block;margin-top:12px;font-size:14px;color:var(--soft)}
+label.f input,label.f textarea,label.f select{display:block;width:100%;margin-top:3px;border:1px solid var(--line);background:#fff;padding:9px;color:var(--ink);font-size:16px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.radios{display:flex;gap:8px;margin-top:4px}
+.radios label{flex:1;display:flex;gap:6px;align-items:center;border:1px solid var(--line);background:#fff;padding:8px 10px;cursor:pointer;color:var(--ink)}
+.radios label:has(input:checked){border-color:var(--head);box-shadow:inset 0 0 0 1px var(--head)}
+.sum{margin-top:16px;background:var(--paper);padding:12px 14px}
+.sum div{display:flex;justify-content:space-between}
+.sum .t{font-family:"Noto Serif TC",serif;font-size:22px;border-top:1px solid var(--line);margin-top:6px;padding-top:6px}
+.err{color:var(--err);margin-top:10px}
+.linebtn{display:inline-flex;align-items:center;justify-content:center;background:#06C755;color:#fff;text-decoration:none;padding:9px 18px;border-radius:999px;font-weight:500;min-height:42px}
+.linebtn:focus-visible{outline:2px solid var(--ink)}
+.paybox{margin-top:16px;border:0;padding:0}
+.payopt{display:flex;gap:8px;align-items:flex-start;padding:10px;border:1px solid var(--line);margin-top:6px;cursor:pointer}
+.payopt:has(input:checked){border-color:var(--head);box-shadow:inset 0 0 0 1px var(--head)}
+.payopt small{display:block;color:var(--soft)}
+.bank{background:var(--paper);padding:12px;margin-top:8px;font-size:15px;line-height:1.8}
+.acct b{font-size:18px;letter-spacing:.04em}
+.ok{background:var(--paper);padding:14px;margin-top:10px}
+.center{padding:60px 0;text-align:center;color:var(--soft)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{background:var(--head);color:#fff;text-align:left;font-weight:500;padding:8px;white-space:nowrap}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:nth-child(even) td{background:var(--paper)}
+td.n,th.n{text-align:right}
+td select,td input{padding:4px;border:1px solid var(--line);background:#fff}
+td input{width:76px;text-align:right}
+.foot{font-size:13px;padding:0 0 32px;margin:0}.foot a{color:var(--soft)}
+.covers{display:grid;gap:14px}.cv{border-bottom:1px solid var(--line);padding:10px 0}.cv summary{cursor:pointer;display:flex;gap:12px;align-items:center}.cv summary img{width:56px;height:70px;object-fit:cover;background:var(--paper)}.pick{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.pick button{padding:0;border:3px solid transparent;background:var(--paper);width:96px;height:120px}.pick button[aria-pressed=true]{border-color:var(--head)}.pick img{width:100%;height:100%;object-fit:cover}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+
+/* 型錄輸出 */
+@page{size:A4;margin:0}
+.ptool{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.sheets{padding:24px 0;display:flex;flex-direction:column;align-items:center;gap:24px;background:#d8d2c8;overflow-x:hidden}
+@media(max-width:860px){.sheets{padding:12px 0;gap:12px}}
+.sheet{width:210mm;height:297mm;background:#fff;padding:12mm 20mm 10mm 14mm;display:flex;flex-direction:column;overflow:hidden;color:var(--ink);box-shadow:0 2px 12px rgba(58,36,24,.18);position:relative}
+.sh-top{display:flex;justify-content:space-between;align-items:baseline;font-size:9pt;color:var(--soft);border-bottom:.3mm solid var(--line);padding-bottom:2.5mm}
+.sh-top b{font-family:"Noto Serif TC",serif;color:var(--head);font-size:10pt}
+.sh-title{display:flex;justify-content:space-between;align-items:baseline;margin:5mm 0 4mm;gap:6mm}
+.sh-title h2{font-size:23pt;color:var(--head);letter-spacing:.04em}
+.sh-title span{font-size:10.5pt;color:var(--soft);letter-spacing:.04em;white-space:nowrap}
+.sh-main{height:112mm;background:var(--paper)}
+.sh-main img,.sh-thumbs img{width:100%;height:100%;object-fit:cover;display:block}
+.sh-thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin-top:3mm;height:38mm}
+.sh-thumbs div{background:var(--paper);overflow:hidden}
+.sh-body{display:grid;grid-template-columns:1.3fr 1fr;gap:7mm;margin-top:5mm;font-size:9.5pt;line-height:1.65}
+.sh-body h3{font-size:10.5pt;color:var(--head);margin:0 0 1.5mm}
+.sh-body p{margin:0 0 2.5mm}
+.sh-body ul{margin:0;padding:0;list-style:none}
+.sh-body .fl li{padding-left:3.5mm;position:relative}.sh-body .fl li:before{content:"";position:absolute;left:0;top:2.3mm;width:1.5mm;height:1.5mm;background:var(--accent);border-radius:50%}
+.sh-spec li{border-bottom:.2mm solid var(--line);padding:1mm 0}
+.sh-spec b{color:var(--head);font-weight:500;margin-right:2mm}
+.sh-table{margin-top:4mm;flex:1;min-height:0}
+.ptabs{display:grid;gap:4mm}
+.ptabs.cols2{grid-template-columns:1fr 1fr}
+.ptab{width:100%;border-collapse:collapse;font-size:9pt}
+.ptab th{background:var(--head);color:#fff;font-weight:500;padding:1.5mm 2mm;text-align:left;white-space:nowrap}
+.ptab td{padding:1.4mm 2mm;border-bottom:.2mm solid var(--line);vertical-align:top}
+.ptab tr:nth-child(even) td{background:#FAF7F2}
+.ptab .n{text-align:right;white-space:nowrap}
+.ptab small{color:var(--soft)}
+.sku{display:block;font-size:7.5pt;color:var(--soft);letter-spacing:.02em}
+.sheet.dense .sh-main{height:90mm}.sheet.dense .sh-thumbs{height:30mm}.sheet.dense .sh-body{font-size:9pt;margin-top:4mm}.sheet.dense .ptab{font-size:8.5pt}.sheet.dense .ptab td{padding:1mm 2mm}
+.sheet.denser .sh-main{height:74mm}.sheet.denser .sh-thumbs{display:none}
+.sh-foot{display:flex;justify-content:space-between;font-size:8pt;color:var(--soft);border-top:.3mm solid var(--line);padding-top:2.5mm;margin-top:3mm}
+/* 右側分類色標 */
+.ctab{position:absolute;right:0;width:9mm;height:24mm;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9pt;letter-spacing:.3em;writing-mode:vertical-rl;font-family:"Noto Serif TC",serif;font-weight:700}
+.ctab.ghost{opacity:.18}
+.toc h3{font-size:12pt;color:var(--head);margin:0}
+.toc .ci{display:flex;align-items:baseline;gap:4mm;border-bottom:.3mm solid var(--line);padding:3mm 0 2mm}
+.toc .ci i{width:4mm;height:4mm;display:inline-block;flex:none;align-self:center}
+.toc .ci span{flex:1;font-size:9pt;color:var(--soft)}
+.toc .ci em{font-style:normal;font-size:10pt;color:var(--head)}
+.cover{padding:0}
+.cover .cv-img{position:absolute;inset:0;background:var(--paper)}
+.cover .cv-img img{width:100%;height:100%;object-fit:cover}
+.cover .cv-panel{position:absolute;left:0;right:0;bottom:0;background:#F7F4EE;padding:12mm 14mm 11mm;display:flex;justify-content:space-between;align-items:flex-end;gap:8mm}
+.cover .cv-panel small{display:block;font-size:10pt;letter-spacing:.12em;color:var(--soft)}
+.cover h1{font-size:40pt;color:var(--head);margin:2mm 0 3mm;letter-spacing:.06em}
+.cover p{margin:0;font-size:11pt;color:var(--ink)}
+.qrs{display:flex;gap:5mm}
+.qr{text-align:center;font-size:8pt;color:var(--soft);line-height:1.4}
+.qr svg{width:26mm;height:26mm;display:block;margin:0 auto 1mm}
+.sh-info{font-size:10.5pt;line-height:1.8}
+.sh-info h3{font-size:13pt;color:var(--head);margin:7mm 0 2mm}
+.sh-info p{margin:0 0 2mm}
+.editing [data-edit]{outline:1px dashed var(--accent);outline-offset:1mm;cursor:text}
+.editing [data-edit]:focus{outline:2px solid var(--accent);background:#FFFDF8}
+.editing [data-img]{cursor:pointer;position:relative}
+.editing [data-img]:hover{outline:3px solid var(--accent);outline-offset:-3px}
+.slot-empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--soft);font-size:9pt}
+.resetpage{position:absolute;top:3mm;right:12mm;z-index:3;font-size:12px;background:#fff;border:1px solid var(--line);padding:3px 8px}
+@media print{.resetpage,.slot-empty{display:none}.editing [data-edit]{outline:none}}
+@media print{html,body{margin:0;padding:0}body{background:#fff}.ptool{display:none}.sheets{zoom:1!important}.sheet{height:296mm;break-inside:avoid;page-break-inside:avoid}.wk-print .sheet{zoom:.88;margin:0 auto}.sheets{padding:0;gap:0;background:#fff;display:block}.sheet{box-shadow:none;page-break-after:always;break-after:page}.sheet:last-child{page-break-after:auto;break-after:auto}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+@media(max-width:760px){.cartbtn{position:fixed;right:16px;bottom:16px;z-index:6;padding:12px 20px;margin:0}.detail{grid-template-columns:1fr}.stage .main{aspect-ratio:1}dialog{height:100dvh}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.card h2{font-size:17px}}
+@media(prefers-reduced-motion:no-preference){.main{transition:opacity .2s}}
+</style>
+</head>
+<body>
+<div id="app"><div class="center">載入型錄中</div></div>
+<dialog id="dlg"></dialog>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+const API_URL='https://script.google.com/macros/s/AKfycbw-GcR1WCM4So6xacTMr-gOxJtYHtZQtR29eHjdJ7F6lmmCF1n_9CKlu2TpIPdOEoKrzg/exec';
+const LINE='@473dadky';
+const LINE_URL='https://lin.ee/taAPQlsD';
+const BANK={code:'806 元大銀行｜永和分行',name:'永美室內裝修設計有限公司',acct:'20222000104927'};
+const PAY={現金:'請於上班時間至永美門市現金結帳。',匯款:'請將費用匯至以下帳戶，回傳官方 LINE 匯款成功畫面截圖，並提供帳戶末五碼，以利查帳，謝謝～'};
+const CATC={餐椅:'#A0613E',餐桌:'#6B4C3B',茶几:'#8C8A5A',邊櫃:'#5E6B5C',沙發:'#B08A5A',燈具:'#C49A45',地毯:'#7A6274'};
+const SHIP_NOTE={160:'小件運費',1200:'大型家具運費'};
+const lineBtn=(t='加入官方 LINE')=>`<a class="linebtn" href="${LINE_URL}" target="_blank" rel="noopener">${t}</a>`;
+const bankBox=()=>`<div class="bank"><div>${esc(BANK.code)}</div><div>${esc(BANK.name)}</div><div class="acct"><b>${esc(BANK.acct)}</b> <button type="button" class="linkbtn" data-copy="${esc(BANK.acct)}">複製帳號</button></div></div>`;
+function bindCopy(root){root.querySelectorAll('[data-copy]').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(b.dataset.copy);b.textContent='已複製'}catch(e){b.textContent='請長按帳號複製'}})}
+const VIEW=new URLSearchParams(location.search).get('view')||'';
+const STAFF=VIEW==='staff',ADMIN=VIEW==='admin',PRINT=VIEW==='print';
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=n=>Math.round(Number(n)).toLocaleString('en-US');
+const money=n=>'NT$'+num(n);
+const img=(x,w=900)=>{if(!x)return '';x=String(x);if(/^https?:\/\//.test(x))return x.replace(/\/w:\d+\//,`/w:${Math.min(1920,w)}/`);return `https://lh3.googleusercontent.com/d/${encodeURIComponent(x)}=w${w}`};
+const safeUrl=u=>/^https?:\/\//.test(String(u))?String(u):'';
+const cc=c=>CATC[c]||'#7A6656';
+let DATA=null,filter='全部',cart=[],sel=null,pw='';
+try{cart=JSON.parse(localStorage.getItem('kb_cart')||'[]')}catch(e){}
+const saveCart=()=>{try{localStorage.setItem('kb_cart',JSON.stringify(cart))}catch(e){}};
+const dlg=$('#dlg');
+
+async function get(q){const r=await fetch(API_URL+'?'+q);const j=await r.json();if(j.error)throw new Error(j.error);return j}
+async function post(b){const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(b)});const j=await r.json();if(j.error)throw new Error(j.error);return j}
+const shownPrice=i=>STAFF?i.staff:i.price;
+const skuMap=()=>Object.fromEntries(DATA.series.flatMap(s=>s.items.map(i=>[i.sku,{...i,series:s}])));
+const preOf=s=>{const p=[...new Set(s.items.map(i=>i.pre).filter(Boolean))];return p.length===1?p[0]:p.length?'依款式而定':''};
+const coverOf=s=>s.cover||(s.items.find(i=>i.img)||{}).img||'';
+
+/* 運費：同一張訂單取最高級距；樓層費無電梯 2 樓起每層 +200 */
+const RULE_TEXT={order:'每張訂單計一次',large:'僅含大型家具的訂單收取',item:'依件數計算'};
+function fees(lines,floor,elevator,rule=DATA&&DATA.floorRule||'order',per=DATA&&DATA.perFloor||200){
+ const ship=lines.length?Math.max(...lines.map(l=>l.ship||1200)):0;
+ const q=lines.reduce((a,l)=>a+l.qty,0);
+ const f=Math.floor(Number(floor))||0;let ff=0;
+ if(elevator==='無'&&f>=2){const p=(f-1)*per;ff=rule==='item'?p*q:rule==='large'?(ship>=1200?p:0):p}
+ return {ship,floorFee:ff};
+}
+function shipInfo(){const r=DATA.floorRule||'order';return `<div><h3>運費</h3><ul><li>小件 NT$160：餐椅、燈飾、6,000 元以下餐桌等</li><li>大型家具 NT$1,200：沙發、地毯、餐桌、邊櫃、茶几等</li><li>同一張訂單只收一次，有大型家具時以 NT$1,200 計</li></ul></div>
+<div><h3>樓層費</h3><ul><li>無電梯 2 樓起，每層加收 NT$${num(DATA.perFloor||200)}（${RULE_TEXT[r]}）</li><li>有電梯不另收</li></ul></div>`}
+function infoBlock(){return `<section class="info"><h2>訂購須知</h2><div class="cols">
+<div><h3>預購</h3><ul><li>家具皆為預購商品，到貨天數依各商品標示</li><li>實木與天然石材的紋理、色澤各有不同，屬正常現象</li></ul></div>
+${shipInfo()}${STAFF?'<div><h3>員工價</h3><ul><li>員工價為售價 8 折</li><li>運費與樓層費不打折</li></ul></div>':''}
+<div><h3>聯絡我們</h3><ul><li>官方 LINE ${LINE}</li><li>(02) 2923-0218</li><li>新北市永和區自由街55號1樓</li></ul></div>
+</div></section>`}
+
+function renderShop(){
+ const cats=['全部',...DATA.cats];
+ const list=DATA.series.filter(s=>filter==='全部'||s.cat===filter);
+ const count=cart.reduce((a,c)=>a+c.qty,0);
+ $('#app').innerHTML=`<div class="wrap"><header class="top"><h1>家具型錄</h1>
+ <p>${STAFF?(DATA.open?'員工價為售價 8 折，運費與樓層費另計。選好款式後加入清單，填寫配送資訊即可送出。':'員工預購目前暫停，如需協助請私訊官方 LINE。'):`歡迎挑選喜歡的款式，想訂購請告訴永美門市人員品編，或私訊官方 LINE ${LINE}。`}</p><p style="margin-top:14px">${lineBtn()}</p></header></div>
+ <nav class="filters" aria-label="依分類篩選"><div class="wrap">${cats.map(t=>`<button class="pill" aria-pressed="${t===filter}" data-f="${esc(t)}">${t!=='全部'?`<span class="dot" style="background:${cc(t)}"></span>`:''}${esc(t)}</button>`).join('')}${STAFF?`<button class="cartbtn" id="openCart">訂購清單（${count}）</button>`:''}</div></nav>
+ <main class="wrap"><div class="grid">${list.map(card).join('')}</div>${infoBlock()}<p class="foot"><a href="?view=admin">管理後台</a></p></main>`;
+ $('#app').querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filter=b.dataset.f;renderShop()});
+ $('#app').querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>openSeries(b.dataset.s));
+ const oc=$('#openCart');if(oc)oc.onclick=openCart;
+ $('#app').querySelectorAll('img').forEach(i=>i.onerror=()=>{i.style.visibility='hidden'});
+}
+function card(s){
+ const min=Math.min(...s.items.map(shownPrice)),max=Math.max(...s.items.map(shownPrice));
+ const pre=preOf(s);
+ return `<button class="card" data-s="${esc(s.id)}"><div class="photo"><img loading="lazy" referrerpolicy="no-referrer" src="${img(coverOf(s),600)}" alt="${esc(s.name)}"><span class="cattag" style="background:${cc(s.cat)}">${esc(s.cat)}</span></div>
+ <h2>${esc(s.name)}</h2><div class="meta">${esc(s.id)}｜${s.items.length} 款${pre?'｜預購'+esc(pre):''}</div>
+ <div class="${STAFF?'staffprice':'price'}">${STAFF?'員工價 ':''}${money(min)}${max>min?' 起':''}</div></button>`
+}
+
+async function openSeries(id){
+ const s=DATA.series.find(x=>x.id===id);
+ sel={s,sku:s.items[0].sku,gallery:[],photo:null,qty:1};
+ renderDetail();dlg.showModal();
+ try{const g=await get('action=gallery&series='+encodeURIComponent(id));if(sel&&sel.s.id===id){sel.gallery=g.images||[];renderDetail()}}catch(e){}
+}
+function specList(s,it){
+ const l=[];if(s.mat)l.push(['材質',s.mat]);if(s.size)l.push(['尺寸',s.size]);
+ s.other.forEach(o=>{const m=o.match(/^(.{1,6})[:：]\s*(.+)$/);l.push(m?[m[1],m[2]]:['',o])});
+ if(it&&it.pre)l.push(['預購',it.pre]);else{const p=preOf(s);if(p)l.push(['預購',p])}
+ return l;
+}
+function renderDetail(){
+ const s=sel.s,it=s.items.find(i=>i.sku===sel.sku);
+ const main=sel.photo||it.img||sel.gallery[0]||coverOf(s);
+ const thumbs=[...new Set([it.img,...sel.gallery,...s.items.map(i=>i.img)].filter(Boolean))];
+ dlg.innerHTML=`<div class="detail"><div class="stage"><img class="main" referrerpolicy="no-referrer" src="${img(main,1200)}" alt="${esc(s.name)}">
+ ${thumbs.length>1?`<div class="thumbs">${thumbs.map(t=>`<button data-t="${esc(t)}" aria-current="${t===main}" aria-label="查看其他照片"><img loading="lazy" referrerpolicy="no-referrer" src="${img(t,160)}" alt=""></button>`).join('')}</div>`:''}</div>
+ <div class="panel"><button class="x" aria-label="關閉" data-close>×</button><h2>${esc(s.name)}</h2><div class="sub">${esc(it.sku)}｜${esc(s.cat)}</div>
+ ${s.items.length>1?`<fieldset><legend>款式</legend><div class="opts">${s.items.map(i=>`<button class="opt" aria-pressed="${i.sku===sel.sku}" data-sku="${esc(i.sku)}">${esc(i.label||i.sku)}</button>`).join('')}</div></fieldset>`:''}
+ <div class="bigprice">${money(shownPrice(it))}${STAFF?'<span class="pricetag">員工價</span>':''}</div>${STAFF?`<div class="sub">原價 <s>${money(it.price)}</s>｜${SHIP_NOTE[it.ship]||'運費'} NT$${num(it.ship)}</div>`:''}
+ ${STAFF?(DATA.open?`<div class="qty"><input id="qty" type="number" min="1" max="99" value="${sel.qty}" aria-label="數量"><button class="primary" id="add">加入訂購清單</button></div>`:`<p class="err">員工預購目前暫停。</p>`):`<p class="sub">想訂購請告訴門市人員品編 ${esc(it.sku)}，或私訊官方 LINE。</p><p>${lineBtn('私訊官方 LINE')}</p>`}
+ ${s.intro?`<p class="intro">${esc(s.intro)}</p>`:''}
+ ${s.feat.length?`<ul class="feat">${s.feat.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>`:''}
+ <ul class="spec">${specList(s,it).map(([k,v])=>`<li>${k?`<b>${esc(k)}</b>　`:''}${esc(v)}</li>`).join('')}</ul></div></div>`;
+ dlg.querySelector('[data-close]').onclick=()=>dlg.close();
+ dlg.querySelectorAll('[data-sku]').forEach(b=>b.onclick=()=>{sel.sku=b.dataset.sku;sel.photo=null;renderDetail()});
+ dlg.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{sel.photo=b.dataset.t;renderDetail()});
+ dlg.querySelectorAll('img').forEach(i=>i.onerror=()=>{i.style.visibility='hidden'});
+ const add=$('#add',dlg);if(add)add.onclick=()=>{
+  const q=Math.floor(Number($('#qty',dlg).value));if(!(q>=1&&q<=99)){$('#qty',dlg).focus();return}
+  const ex=cart.find(c=>c.sku===it.sku);if(ex)ex.qty=Math.min(99,ex.qty+q);else cart.push({sku:it.sku,qty:q});
+  saveCart();dlg.close();renderShop();
+ };
+}
+
+function openCart(){
+ const m=skuMap();cart=cart.filter(c=>m[c.sku]);
+ const sub=cart.reduce((a,c)=>a+m[c.sku].staff*c.qty,0);
+ const v=window.__form||{};
+ const lines=cart.map(c=>({ship:m[c.sku].ship,qty:c.qty}));
+ const fe=fees(lines,v.floor,v.elevator);
+ dlg.innerHTML=`<div class="cart"><button class="x" aria-label="關閉" data-close>×</button><h2>訂購清單</h2>
+ ${cart.length?cart.map(c=>`<div class="row"><div>${esc(m[c.sku].series.name)}<br><small>${esc(m[c.sku].label)}｜${esc(c.sku)}${m[c.sku].pre?'｜預購'+esc(m[c.sku].pre):''}</small></div><div>${money(m[c.sku].staff*c.qty)}</div>
+ <div><label>數量 <input type="number" min="1" max="99" value="${c.qty}" data-q="${esc(c.sku)}" style="width:64px;padding:4px"></label></div><div><button class="linkbtn" data-rm="${esc(c.sku)}">移除</button></div></div>`).join(''):'<p class="sub">清單是空的，先回型錄挑選款式。</p>'}
+ ${cart.length?`<form id="of"><label class="f">姓名<input name="name" required maxlength="30" value="${esc(v.name)}" autocomplete="name"></label>
+ <div class="two"><label class="f">電話<input name="phone" required maxlength="20" inputmode="tel" value="${esc(v.phone)}" autocomplete="tel"></label>
+ <label class="f">部門<input name="dept" required maxlength="30" value="${esc(v.dept)}"></label></div>
+ <label class="f">配送地址<input name="address" required maxlength="120" value="${esc(v.address)}" autocomplete="street-address" placeholder="縣市、區、路名門牌"></label>
+ <div class="two"><label class="f">樓層<input name="floor" type="number" min="1" max="99" required inputmode="numeric" value="${esc(v.floor)}" placeholder="例：3"></label>
+ <div class="f" style="margin-top:12px;font-size:14px;color:var(--soft)">有無電梯<div class="radios"><label><input type="radio" name="elevator" value="有" required ${v.elevator==='有'?'checked':''}>有</label><label><input type="radio" name="elevator" value="無" required ${v.elevator==='無'?'checked':''}>無</label></div></div></div>
+ <label class="f">備註<textarea name="note" rows="2" maxlength="200">${esc(v.note)}</textarea></label>
+ <div class="sum" id="sum">${sumHtml(sub,fe)}</div>
+ <fieldset class="paybox"><legend>付款方式</legend>
+ <label class="payopt"><input type="radio" name="method" value="現金" required ${v.method==='現金'?'checked':''}><span>現金<small>${PAY.現金}</small></span></label>
+ <label class="payopt"><input type="radio" name="method" value="匯款" required ${v.method==='匯款'?'checked':''}><span>匯款<small>${PAY.匯款}</small></span></label>
+ <div id="bankwrap" ${v.method==='匯款'?'':'hidden'}>${bankBox()}</div></fieldset>
+ <label style="display:flex;gap:8px;margin-top:14px;font-size:14px"><input type="checkbox" required> <span>我已確認品項、數量與配送資訊。家具為預購商品，送出後如需修改或取消，請私訊官方 LINE ${LINE}。</span></label>
+ <p class="err" id="oe" hidden></p><button class="primary" style="margin-top:14px;width:100%">送出訂單</button></form>`:''}</div>`;
+ dlg.querySelector('[data-close]').onclick=()=>dlg.close();
+ dlg.querySelectorAll('[data-q]').forEach(i=>i.onchange=()=>{keep();const c=cart.find(x=>x.sku===i.dataset.q);c.qty=Math.max(1,Math.min(99,Math.floor(Number(i.value))||1));saveCart();openCart();renderShop()});
+ dlg.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{keep();cart=cart.filter(c=>c.sku!==b.dataset.rm);saveCart();openCart();renderShop()});
+ bindCopy(dlg);
+ dlg.querySelectorAll('input[name=method]').forEach(r=>r.onchange=()=>{const w=$('#bankwrap',dlg);if(w)w.hidden=r.value!=='匯款'||!r.checked});
+ const f=$('#of',dlg);
+ if(f){const upd=()=>{const d=Object.fromEntries(new FormData(f));$('#sum',dlg).innerHTML=sumHtml(sub,fees(lines,d.floor,d.elevator))};f.floor.oninput=upd;f.querySelectorAll('input[name=elevator]').forEach(r=>r.onchange=upd)}
+ if(f)f.onsubmit=async e=>{
+  e.preventDefault();const d=Object.fromEntries(new FormData(f));const btn=f.querySelector('.primary'),er=$('#oe',dlg);
+  btn.disabled=true;btn.textContent='送出中';er.hidden=true;
+  window.__token=window.__token||(Date.now()+'-'+Math.random().toString(36).slice(2));
+  try{const r=await post({action:'order',token:window.__token,items:cart,...d});
+   window.__token=null;cart=[];saveCart();renderShop();
+   const mt=d.method;window.__form={name:d.name,phone:d.phone,dept:d.dept,address:d.address,floor:d.floor,elevator:d.elevator};
+   dlg.innerHTML=`<div class="cart"><button class="x" aria-label="關閉" data-close>×</button><h2>訂單已送出</h2><div class="ok">訂單編號 <b>${esc(r.orderId)}</b><br>商品 ${money(r.sub)}｜運費 ${money(r.ship)}${r.floorFee?`｜樓層費 ${money(r.floorFee)}`:''}<br><b>合計 ${money(r.total)}</b><br>付款方式 ${esc(mt)}</div>
+   <p>${esc(PAY[mt]||'')}</p>${mt==='匯款'?bankBox():''}
+   <p class="sub">請截圖保留訂單編號。如需修改或取消，請私訊官方 LINE。</p>
+   <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">${lineBtn(mt==='匯款'?'開啟官方 LINE 回傳截圖':'加入官方 LINE')}<button class="primary" data-close>回到型錄</button></div></div>`;
+   dlg.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>dlg.close());bindCopy(dlg);
+  }catch(x){er.textContent=(x.message||'送出失敗')+' 訂單尚未確認，請再按一次；若仍失敗請私訊官方 LINE。';er.hidden=false;btn.disabled=false;btn.textContent='送出訂單'}
+ };
+ if(!dlg.open)dlg.showModal();
+ function keep(){const f=$('#of',dlg);if(f)window.__form=Object.fromEntries(new FormData(f))}
+}
+function sumHtml(sub,fe){return `<div><span>商品小計（員工價）</span><span>${money(sub)}</span></div><div><span>運費</span><span>${money(fe.ship)}</span></div><div><span>樓層費</span><span>${money(fe.floorFee)}</span></div><div class="t"><span>合計</span><span>${money(sub+fe.ship+fe.floorFee)}</span></div>`}
+
+/* 後台 */
+let AD=null,tab='orders',CAT=null;const GAL={};
+function adminLogin(msg){
+ $('#app').innerHTML=`<div class="cart"><h2>家具型錄後台</h2><form id="lf"><label class="f">密碼<input type="password" name="p" required autocomplete="current-password"></label>${msg?`<p class="err">${esc(msg)}</p>`:''}<button class="primary" style="margin-top:12px">登入</button></form></div>`;
+ $('#lf').onsubmit=async e=>{e.preventDefault();pw=new FormData(e.target).get('p');await loadAdmin()};
+}
+async function loadAdmin(){try{AD=await post({action:'admin_data',password:pw});renderAdmin()}catch(x){adminLogin(x.message)}}
+function csv(name,rows){
+ const q=v=>{let s=String(v??'');if(/^[=+\-@]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"'};
+ const b=new Blob(['\ufeff'+rows.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});
+ const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();URL.revokeObjectURL(a.href);
+}
+function renderAdmin(){
+ const T={orders:'訂單明細',summary:'叫貨彙總',add:'代客下單',cover:'首圖設定',set:'設定'};
+ const tot=AD.summary.reduce((a,r)=>({q:a.q+r.qty,c:a.c+r.qty*r.cost}),{q:0,c:0});
+ const fee=AD.orders.reduce((a,o)=>({s:a.s+o.ship,f:a.f+o.floorFee}),{s:0,f:0});
+ let body='';
+ if(tab==='orders')body=`<div class="bar"><button class="ghost" id="xo">下載明細 CSV</button><span class="sub">共 ${AD.orders.length} 筆｜運費 ${money(fee.s)}｜樓層費 ${money(fee.f)}</span></div><div class="tablewrap"><table><tr><th>訂單</th><th>時間</th><th>類型</th><th>姓名／電話</th><th>配送</th><th>品項</th><th class="n">商品</th><th class="n">運費</th><th class="n">樓層費</th><th class="n">合計</th><th>付款</th><th>方式</th><th>備註</th><th></th></tr>
+ ${AD.orders.map(o=>{const sub=o.lines.reduce((a,l)=>a+l.unit*l.qty,0);return `<tr data-id="${esc(o.id)}"><td>${esc(o.id)}</td><td>${esc(o.date)}</td><td>${esc(o.kind)}</td><td>${esc(o.name)}${o.dept?`（${esc(o.dept)}）`:''}<br><small>${esc(o.phone)}</small></td><td>${esc(o.address)}${o.floor?`<br><small>${esc(o.floor)} 樓｜${esc(o.elevator)}電梯</small>`:''}</td><td>${o.lines.map(l=>`${esc(l.sku)} ×${l.qty}<br><small>${esc(l.name)}</small>`).join('<br>')}</td><td class="n">${num(sub)}</td>
+ <td class="n"><input type="number" min="0" data-ship value="${o.ship}" aria-label="運費"></td><td class="n"><input type="number" min="0" data-ff value="${o.floorFee}" aria-label="樓層費"></td><td class="n" data-tot>${num(o.total)}</td>
+ <td><select data-pay>${['未付','已付'].map(p=>`<option ${o.pay===p?'selected':''}>${p}</option>`).join('')}</select></td><td><select data-method>${['','現金','匯款'].map(p=>`<option ${o.method===p?'selected':''}>${p}</option>`).join('')}</select></td><td>${esc(o.note)}</td><td><button class="linkbtn" data-del>刪除</button></td></tr>`}).join('')}</table></div>
+ <p class="sub">運費、樓層費可直接修改（例如公司剛好進貨可平攤時改為 0），改完自動儲存並重算合計。</p>`;
+ if(tab==='summary')body=`<div class="bar"><button class="ghost" id="xs">下載叫貨 CSV</button><span class="sub">${tot.q} 件｜預估進價 ${money(tot.c)}</span></div><div class="tablewrap"><table><tr><th>品編</th><th class="n">數量</th><th>品項</th><th>預購期</th><th class="n">進價</th><th class="n">進價小計</th><th>進貨連結</th></tr>
+ ${AD.summary.map(r=>`<tr><td>${esc(r.sku)}</td><td class="n">${r.qty}</td><td>${esc(r.name)}</td><td>${esc(r.pre)}</td><td class="n">${num(r.cost)}</td><td class="n">${num(r.qty*r.cost)}</td><td>${safeUrl(r.link)?`<a href="${esc(safeUrl(r.link))}" target="_blank" rel="noopener">開啟</a>`:'<span class="err">缺連結</span>'}</td></tr>`).join('')}</table></div>`;
+ if(tab==='add')body=`<form id="af" class="cart" style="margin:0;padding:0"><label class="f">類型<select name="kind"><option>客戶</option><option>員工</option></select></label>
+ <div class="two"><label class="f">姓名<input name="name" required></label><label class="f">電話<input name="phone" required inputmode="tel"></label></div>
+ <label class="f">部門（客戶免填）<input name="dept"></label><label class="f">配送地址<input name="address"></label>
+ <div class="two"><label class="f">樓層<input name="floor" type="number" min="1" max="99"></label><label class="f">電梯<select name="elevator"><option value="有">有電梯</option><option value="無">無電梯</option></select></label></div>
+ <label class="f">品項，一行一筆「品編 數量」<textarea name="lines" rows="5" required placeholder="DC-001-R 2"></textarea></label>
+ <div class="two"><label class="f">運費（留空自動計算）<input name="ship" type="number" min="0"></label><label class="f">樓層費（留空自動計算）<input name="floorFee" type="number" min="0"></label></div>
+ <label class="f">備註<input name="note"></label><label class="f">付款方式<select name="method"><option></option><option>現金</option><option>匯款</option></select></label>
+ <div class="sum" id="aq" hidden></div><p class="err" id="ae" hidden></p><div class="bar"><button type="button" class="ghost" id="aqb">試算金額</button><button class="primary">建立訂單</button></div></form>
+ <p class="sub">客戶訂單以售價計算，員工訂單以員工價計算。後台可訂購未上架的品編，共 ${AD.skus.length} 個品編。</p>`;
+ if(tab==='cover')body=CAT?`<p class="sub">點系列展開，從現有照片中點一張設為型錄首圖。未設定時使用第一個款式的照片。照片來源是試算表的圖片網址，以及「圖片資料夾」欄的雲端資料夾。</p><div class="covers">${CAT.series.map(s=>`<details class="cv" data-cv="${esc(s.id)}"><summary><img referrerpolicy="no-referrer" src="${img(coverOf(s),160)}" alt=""><span><span class="dot" style="background:${cc(s.cat)}"></span> ${esc(s.id)} ${esc(s.name)}<br><small class="sub">${s.cover?'已自訂首圖':'預設首圖'}</small></span></summary><div class="pick" data-pick="${esc(s.id)}"><span class="sub">載入照片中</span></div>${s.cover?`<button class="linkbtn" data-reset="${esc(s.id)}" style="margin-top:8px">改回預設首圖</button>`:''}</details>`).join('')}</div>`:'<p class="sub">載入型錄中</p>';
+ if(tab==='set')body=`<h3 style="margin-top:8px">樓層費計算方式</h3><p class="sub">無電梯 2 樓起，每層 NT$200。確認廠商規則後在這裡切換，網站與新訂單會一起更新。</p>
+ <div class="opts">${Object.entries(RULE_TEXT).map(([k,t])=>`<button class="opt" aria-pressed="${AD.floorRule===k}" data-rule="${k}">${t}</button>`).join('')}</div>
+ <h3 style="margin-top:24px">資料更新</h3><p class="sub">試算表的修改最多 5 分鐘內會同步；新增圖片到資料夾後最多 10 分鐘。想立即更新請按下方按鈕。</p><button class="ghost" id="rfc">立即更新型錄與圖片</button>`;
+ $('#app').innerHTML=`<div class="wrap"><header class="top"><h1 style="font-size:36px">家具型錄後台</h1><p><a href="?view=staff">員工下單頁</a>｜<a href="./">客戶型錄頁</a>｜<a href="?view=print">型錄輸出</a></p></header>
+ <div class="bar"><span>員工下單：${AD.open?'開放中':'已暫停'}</span><button class="ghost" id="tg">${AD.closed?'重新開放':'暫停下單'}</button><button class="ghost" id="rf">重新整理</button></div>
+ <div class="tabs">${Object.keys(T).map(k=>`<button class="pill" aria-pressed="${k===tab}" data-tab="${k}">${T[k]}</button>`).join('')}</div>${body}</div>`;
+ $('#app').querySelectorAll('[data-tab]').forEach(b=>b.onclick=async()=>{tab=b.dataset.tab;renderAdmin();if(tab==='cover'&&!CAT){try{CAT=await get('');}catch(x){alertErr(x.message)}renderAdmin()}});
+ $('#app').querySelectorAll('[data-cv]').forEach(d=>d.ontoggle=()=>{if(d.open)loadPick(d.dataset.cv)});
+ $('#app').querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
+  if(b.dataset.confirm!=='1'){b.dataset.confirm='1';b.textContent='確定刪除？';b.style.color='var(--err)';setTimeout(()=>{if(b.isConnected&&b.dataset.confirm==='1'){b.dataset.confirm='';b.textContent='刪除';b.style.color=''}},4000);return}
+  b.disabled=true;b.textContent='刪除中';
+  try{await post({action:'admin_delete',password:pw,id:b.closest('tr').dataset.id});await loadAdmin()}catch(x){alertErr(x.message);b.disabled=false;b.textContent='刪除'}
+ });
+ $('#app').querySelectorAll('[data-reset]').forEach(b=>b.onclick=()=>saveCover(b.dataset.reset,''));
+ $('#app').querySelectorAll('[data-rule]').forEach(b=>b.onclick=async()=>{try{await post({action:'admin_rule',password:pw,rule:b.dataset.rule});AD.floorRule=b.dataset.rule;renderAdmin()}catch(x){alertErr(x.message)}});
+ const rfc=$('#rfc');if(rfc)rfc.onclick=async()=>{rfc.disabled=true;try{await post({action:'admin_refresh',password:pw});rfc.textContent='已更新';CAT=null}catch(x){alertErr(x.message)}rfc.disabled=false};
+ $('#rf').onclick=loadAdmin;
+ $('#tg').onclick=async()=>{await post({action:'admin_toggle',password:pw,closed:!AD.closed});loadAdmin()};
+ const xo=$('#xo');if(xo)xo.onclick=()=>csv('家具訂單明細.csv',[['訂單編號','時間','類型','姓名','電話','部門','地址','樓層','電梯','品編','品項','數量','單價','運費','樓層費','訂單合計','付款狀態','付款方式','備註'],...AD.orders.flatMap(o=>o.lines.map((l,i)=>[o.id,o.date,o.kind,o.name,o.phone,o.dept,o.address,o.floor,o.elevator,l.sku,l.name,l.qty,l.unit,i?'':o.ship,i?'':o.floorFee,i?'':o.total,o.pay,o.method,o.note]))]);
+ const xs=$('#xs');if(xs)xs.onclick=()=>csv('家具叫貨彙總.csv',[['品編','數量','品項','預購期','進價','進價小計','進貨連結'],...AD.summary.map(r=>[r.sku,r.qty,r.name,r.pre,Math.round(r.cost),Math.round(r.qty*r.cost),r.link])]);
+ $('#app').querySelectorAll('[data-pay],[data-method]').forEach(s=>s.onchange=async()=>{
+  const tr=s.closest('tr'),id=tr.dataset.id;
+  try{await post({action:'admin_pay',password:pw,id,pay:$('[data-pay]',tr).value,method:$('[data-method]',tr).value});const o=AD.orders.find(x=>x.id===id);o.pay=$('[data-pay]',tr).value;o.method=$('[data-method]',tr).value}catch(x){alertErr(x.message)}
+ });
+ $('#app').querySelectorAll('[data-ship],[data-ff]').forEach(i=>i.onchange=async()=>{
+  const tr=i.closest('tr'),id=tr.dataset.id;
+  try{const r=await post({action:'admin_fee',password:pw,id,ship:$('[data-ship]',tr).value,floorFee:$('[data-ff]',tr).value});const o=AD.orders.find(x=>x.id===id);o.ship=Number($('[data-ship]',tr).value)||0;o.floorFee=Number($('[data-ff]',tr).value)||0;o.total=r.total;$('[data-tot]',tr).textContent=num(r.total)}catch(x){alertErr(x.message)}
+ });
+ const af=$('#af');if(af){
+  const payload=()=>{const d=Object.fromEntries(new FormData(af));const items=d.lines.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const[s,q]=l.split(/\s+/);return{sku:s,qty:Number(q||1)}});return {d,items}};
+  $('#aqb').onclick=async()=>{const {d,items}=payload(),er=$('#ae'),box=$('#aq');er.hidden=true;
+   try{const q=await post({action:'admin_quote',password:pw,kind:d.kind,floor:d.floor,elevator:d.elevator,items});const s=d.ship!==''?Number(d.ship):q.ship,f=d.floorFee!==''?Number(d.floorFee):q.floorFee;box.innerHTML=`<div><span>商品小計</span><span>${money(q.sub)}</span></div><div><span>運費</span><span>${money(s)}</span></div><div><span>樓層費</span><span>${money(f)}</span></div><div class="t"><span>合計</span><span>${money(q.sub+s+f)}</span></div>`;box.hidden=false}catch(x){er.textContent=x.message;er.hidden=false}};
+  af.onsubmit=async e=>{e.preventDefault();const {d,items}=payload(),er=$('#ae');er.hidden=true;
+   try{await post({action:'admin_order',password:pw,token:Date.now()+'-'+Math.random(),...d,items});tab='orders';await loadAdmin()}catch(x){er.textContent=x.message;er.hidden=false}};
+ }
+}
+async function loadPick(id){
+ const box=$(`[data-pick="${id}"]`);if(!box)return;
+ const s=CAT.series.find(x=>x.id===id);
+ if(!GAL[id]){try{GAL[id]=(await get('action=gallery&series='+encodeURIComponent(id))).images||[]}catch(e){GAL[id]=[]}}
+ const ids=[...new Set([...GAL[id],...s.items.map(i=>i.img)].filter(Boolean))];
+ const cur=coverOf(s);
+ box.innerHTML=ids.length?ids.map(p=>`<button aria-pressed="${p===cur}" data-set="${esc(p)}" aria-label="設為首圖"><img loading="lazy" referrerpolicy="no-referrer" src="${img(p,240)}" alt=""></button>`).join(''):'<span class="sub">這個系列找不到照片，請把圖片放進試算表「圖片資料夾」欄的資料夾。</span>';
+ box.querySelectorAll('[data-set]').forEach(b=>b.onclick=()=>saveCover(id,b.dataset.set));
+}
+async function saveCover(id,image){
+ try{await post({action:'admin_cover',password:pw,series:id,image});const s=CAT.series.find(x=>x.id===id);if(image)s.cover=image;else delete s.cover;renderAdmin();const d=$(`[data-cv="${id}"]`);if(d){d.open=true;loadPick(id)}}
+ catch(x){alertErr(x.message)}
+}
+function alertErr(m){const p=document.createElement('p');p.className='err';p.textContent=m;$('#app .wrap').prepend(p)}
+
+/* 型錄輸出 */
+(()=>{const ua=navigator.userAgent;const wk=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)||(/Safari/.test(ua)&&!/Chrome|Chromium|Edg|OPR/.test(ua));if(wk)document.documentElement.classList.add('wk-print')})();
+function qrSvg(text){try{const q=qrcode(0,'M');q.addData(text);q.make();return q.createSvgTag({cellSize:4,margin:0,scalable:true})}catch(e){return ''}}
+const SITE=location.origin+location.pathname;
+let PD=null,CFG={},DIRTY=new Set(),EDIT=false;
+const ALLOWED_TAGS=new Set(['H2','H3','P','B','STRONG','BR','DIV','SPAN','UL','OL','LI','TABLE','TBODY','THEAD','TR','TH','TD','SMALL','I','EM']);
+function cleanHtml(html){const doc=new DOMParser().parseFromString('<div>'+html+'</div>','text/html');const walk=n=>{[...n.children].forEach(c=>{if(!ALLOWED_TAGS.has(c.tagName)){c.replaceWith(...c.childNodes);return walk(n)}[...c.attributes].forEach(a=>{if(a.name!=='class')c.removeAttribute(a.name)});walk(c)})};const root=doc.body.firstChild;walk(root);return root.innerHTML}
+const cfg=k=>CFG[k]||(CFG[k]={});
+const TAB_TOP=30,TAB_H=24,TAB_GAP=2;
+function catTabs(cats,active){return cats.map((c,k)=>`<div class="ctab${active&&c!==active?' ghost':''}" style="top:${TAB_TOP+k*(TAB_H+TAB_GAP)}mm;background:${cc(c)}"${active&&c!==active?' aria-hidden="true"':''}>${active&&c!==active?'':esc(c)}</div>`).join('')}
+async function renderPrint(){
+ const showStaff=new URLSearchParams(location.search).get('staff')==='1';
+ $('#app').innerHTML='<div class="center">準備型錄中</div>';
+ try{
+  const [data,conf]=await Promise.all([get(showStaff?'staff=1':''),get('action=print').catch(()=>({cfg:{}}))]);
+  DATA=data;
+  const gals=await Promise.all(data.series.map(s=>get('action=gallery&series='+encodeURIComponent(s.id)).then(g=>g.images||[]).catch(()=>[])));
+  CFG={};Object.entries(conf.cfg||{}).forEach(([k,v])=>{try{CFG[k]=JSON.parse(v)}catch(e){}});
+  PD={data,gals:Object.fromEntries(data.series.map((s,k)=>[s.id,gals[k]])),showStaff};
+ }catch(x){$('#app').innerHTML=`<div class="center">型錄無法載入：${esc(x.message)}</div>`;return}
+ drawPrint();
+}
+function slot(key,series,id,w,cls=''){
+ const has=id&&id!=='-';
+ return `<div class="${cls}" data-img="${esc(key)}" data-series="${esc(series)}">${has?`<img referrerpolicy="no-referrer" src="${img(id,w)}" alt="">`:(EDIT?'<span class="slot-empty">點擊選圖</span>':'')}</div>`;
+}
+function seriesPage(s,pageNo,showStaff,cats){
+ const key='S_'+s.id,c=CFG[key]||{};
+ const main=c.main||coverOf(s);
+ const auto=[...new Set([...(PD.gals[s.id]||[]),...s.items.map(i=>i.img)].filter(p=>p&&p!==main))];
+ const th=[0,1,2].map(n=>c.thumbs&&c.thumbs[n]!=null?c.thumbs[n]:auto[n]);
+ const showThumbs=EDIT||th.some(t=>t&&t!=='-');
+ const pres=new Set(s.items.map(i=>i.pre).filter(Boolean));const preCol=pres.size>1;
+ const spec=specList(s,preCol?null:{pre:[...pres][0]||''});
+ const defLeft=`${s.intro?`<p>${esc(s.intro)}</p>`:''}${s.feat.length?`<ul class="fl">${s.feat.map(f=>`<li>${esc(f)}</li>`).join('')}</ul>`:''}`;
+ const defRight=`<h3>規格</h3><ul class="sh-spec">${spec.map(([k,v])=>`<li>${k?`<b>${esc(k)}</b>`:''}${esc(v)}</li>`).join('')}</ul>`;
+ const rows=s.items.map(i=>`<tr><td>${esc(i.label)}<span class="sku">${esc(i.sku)}</span></td>${preCol?`<td><small>${esc(i.pre)}</small></td>`:''}<td class="n">${money(i.price)}</td>${showStaff?`<td class="n">${money(i.staff)}</td>`:''}</tr>`);
+ const head=`<tr><th>款式</th>${preCol?'<th>預購</th>':''}<th class="n">售價</th>${showStaff?'<th class="n">員工價</th>':''}</tr>`;
+ const split=rows.length>6;const half=Math.ceil(rows.length/2);
+ const tables=split?[rows.slice(0,half),rows.slice(half)]:[rows];
+ return `<section class="sheet" data-key="${key}">${catTabs(cats,s.cat)}${EDIT?`<button class="resetpage" data-reset-page="${key}">還原此頁</button>`:''}<div class="sh-top"><b>YUNGMEI LIVING 永美家居</b><span>家具型錄｜${esc(s.cat)}</span></div>
+ <div class="sh-title"><h2 data-edit="${key}.name">${esc(c.name||s.name)}</h2><span>品編 ${esc(s.id)} 系列</span></div>
+ ${slot(key+'.main',s.id,main,1600,'sh-main')}
+ ${showThumbs?`<div class="sh-thumbs">${th.map((t,n)=>slot(key+'.thumbs.'+n,s.id,t,700)).join('')}</div>`:''}
+ <div class="sh-body"><div data-edit="${key}.left" data-html="1">${c.left!==undefined?cleanHtml(c.left):defLeft}</div><div data-edit="${key}.right" data-html="1">${c.right!==undefined?cleanHtml(c.right):defRight}</div></div>
+ <div class="sh-table"><div class="ptabs${split?' cols2':''}">${tables.map(t=>`<table class="ptab">${head}${t.join('')}</table>`).join('')}</div></div>
+ <div class="sh-foot"><span>運費另計${showStaff?'｜員工價為售價 8 折，運費不打折':''}｜實際顏色以實品為準</span><span>官方 LINE ${LINE}｜${pageNo}</span></div></section>`;
+}
+function drawPrint(){
+ const {data,showStaff}=PD;
+ const cats=data.cats;
+ const C=CFG.COVER||{};
+ let p=3;const first={};
+ const pages=data.series.map(s=>{if(!(s.cat in first))first[s.cat]=p;return seriesPage(s,p++,showStaff,cats)});
+ const orderUrl=showStaff?SITE+'?view=staff':SITE;
+ const qrBlock=`<div class="qrs"><div class="qr">${qrSvg(LINE_URL)}加入官方 LINE</div><div class="qr">${qrSvg(orderUrl)}${showStaff?'員工線上下單':'線上看型錄'}</div></div>`;
+ const cs=data.series.find(s=>s.cat==='沙發')||data.series[0];
+ const coverImg=C.img||coverOf(cs);
+ const cover=`<section class="sheet cover" data-key="COVER">${EDIT?`<button class="resetpage" data-reset-page="COVER">還原此頁</button>`:''}${slot('COVER.img','',coverImg,2000,'cv-img')}
+  <div class="cv-panel"><div><small>YUNGMEI LIVING 永美家居</small><h1 data-edit="COVER.title">${esc(C.title||'家具型錄')}</h1><p data-edit="COVER.sub">${esc(C.sub||'2026｜'+cats.join('・'))}</p>${showStaff?'<p style="color:var(--soft);font-size:9.5pt;margin-top:2mm">員工價版本</p>':''}</div>${qrBlock}</div></section>`;
+ const toc=`<section class="sheet toc" data-key="TOC">${catTabs(cats)}<div class="sh-top"><b>YUNGMEI LIVING 永美家居</b><span>家具型錄</span></div><div class="sh-title"><h2>目錄</h2><span>右側色標對應分類</span></div>
+  ${cats.map(c=>{const list=data.series.filter(s=>s.cat===c);return `<div class="ci"><i style="background:${cc(c)}"></i><h3>${esc(c)}</h3><span>${list.map(s=>esc(s.name)).join('、')}</span><em>P.${first[c]}</em></div>`}).join('')}
+  <div class="sh-info" style="margin-top:6mm"><div data-edit="TOC.html" data-html="1">${CFG.TOC&&CFG.TOC.html?cleanHtml(CFG.TOC.html):`<h3>關於預購</h3><p>本型錄家具皆為預購商品，到貨天數依各頁標示。實木與天然石材的紋理、色澤各有不同，屬正常現象。</p>`}</div></div>
+  <div style="flex:1"></div><div class="sh-foot"><span>商品資訊僅供參考，實際以商品標示為準</span><span>2</span></div></section>`;
+ const rule=data.floorRule||'order';
+ const info=`<section class="sheet" data-key="INFO">${EDIT?`<button class="resetpage" data-reset-page="INFO">還原此頁</button>`:''}<div class="sh-top"><b>YUNGMEI LIVING 永美家居</b><span>家具型錄</span></div><div class="sh-info"><div data-edit="INFO.html" data-html="1">${CFG.INFO&&CFG.INFO.html?cleanHtml(CFG.INFO.html):`<div class="sh-title"><h2>訂購須知</h2></div>
+  <h3>運費</h3><table class="ptab"><tr><th>級距</th><th>適用品項</th><th class="n">運費</th></tr><tr><td>小件</td><td>餐椅、燈飾、6,000 元以下餐桌等</td><td class="n">NT$160</td></tr><tr><td>大型家具</td><td>沙發、地毯、餐桌、邊櫃、茶几等</td><td class="n">NT$1,200</td></tr></table>
+  <p style="margin-top:2mm">同一張訂單只收一次運費，有大型家具時以 NT$1,200 計。</p>
+  <h3>樓層費</h3><p>無電梯 2 樓起，每層加收 NT$${num(data.perFloor||200)}（${RULE_TEXT[rule]}），有電梯不另收。</p>
+  ${showStaff?'<h3>員工價</h3><p>員工價為售價 8 折，運費與樓層費不打折。</p>':''}
+  <h3>預購與到貨</h3><p>家具皆為預購商品，到貨天數依各商品標示。實木與天然石材的紋理、色澤各有不同，屬正常現象；商品顏色以實品為準。</p>`}</div>
+  <h3>訂購與詢問</h3><div style="display:flex;justify-content:space-between;align-items:flex-end;gap:8mm"><p>官方 LINE ${LINE}<br>永美室內裝修設計有限公司<br>新北市永和區自由街55號1樓<br>(02) 2923-0218</p>${qrBlock}</div></div><div style="flex:1"></div><div class="sh-foot"><span></span><span>${p}</span></div></section>`;
+ const total=p;
+ $('#app').innerHTML=`<div class="ptool"><b>型錄輸出</b><span class="sub" id="pst">共 ${total} 頁，圖片載入中</span>
+  ${EDIT?`<span class="sub">點文字直接修改，點圖片換圖</span><input type="password" id="ppw" placeholder="後台密碼" value="${esc(pw)}" style="padding:6px;border:1px solid var(--line);width:120px"><button class="primary" id="psave">儲存修改${DIRTY.size?`（${DIRTY.size}）`:''}</button><button class="ghost" id="pdone">完成編輯</button>`
+  :`<button class="ghost" id="pedit">編輯內容與圖片</button><label><input type="checkbox" id="pstaff" ${showStaff?'checked':''}> 顯示員工價</label><label>分類 <select id="pcat"><option value="">全部</option>${cats.map(c=>`<option ${PD.only===c?'selected':''}>${esc(c)}</option>`).join('')}</select></label><button class="primary" id="pp">列印 / 存成 PDF</button>`}
+  <a href="?view=admin">回後台</a><span class="err" id="perr" hidden></span></div>
+  <div class="sheets${EDIT?' editing':''}">${PD.only?'':cover+toc}${PD.only?pages.filter((x,k)=>data.series[k].cat===PD.only).join(''):pages.join('')}${PD.only?'':info}</div>`;
+ document.querySelectorAll('.sheet').forEach(s=>{const over=()=>s.scrollHeight>s.clientHeight+1||[...s.children].some(ch=>ch.offsetTop+ch.offsetHeight>s.clientHeight);if(over())s.classList.add('dense');if(over())s.classList.add('denser')});
+ fitSheets();
+ const imgs=[...document.querySelectorAll('.sheet img')];let done=0;imgs.forEach(i=>i.addEventListener('error',()=>{i.style.visibility='hidden'}));const tick=()=>{done++;if(done>=imgs.length)$('#pst').textContent=`共 ${document.querySelectorAll('.sheet').length} 頁，${EDIT?'編輯中':'可以列印了'}`};
+ imgs.forEach(i=>{if(i.complete)tick();else{i.addEventListener('load',tick);i.addEventListener('error',tick)}});if(!imgs.length)tick();
+ if(!EDIT){
+  $('#pstaff').onchange=e=>{location.search='?view=print'+(e.target.checked?'&staff=1':'')};
+  $('#pcat').onchange=e=>{PD.only=e.target.value;drawPrint()};
+  $('#pp').onclick=()=>window.print();
+  $('#pedit').onclick=()=>{EDIT=true;drawPrint()};
+  return;
+ }
+ document.querySelectorAll('[data-edit]').forEach(el=>{
+  el.contentEditable='true';el.spellcheck=false;
+  el.addEventListener('input',()=>{const [k,f]=el.dataset.edit.split('.');cfg(k)[f]=el.dataset.html?cleanHtml(el.innerHTML):el.innerText.trim();DIRTY.add(k);$('#psave').textContent=`儲存修改（${DIRTY.size}）`});
+ });
+ document.querySelectorAll('[data-img]').forEach(el=>el.onclick=()=>openPicker(el.dataset.img,el.dataset.series));
+ document.querySelectorAll('[data-reset-page]').forEach(b=>b.onclick=()=>{const k=b.dataset.resetPage;CFG[k]=null;DIRTY.add(k);drawPrint()});
+ $('#pdone').onclick=()=>{if(DIRTY.size&&!$('#perr').dataset.warned){$('#perr').textContent='還有未儲存的修改，再按一次「完成編輯」會放棄修改';$('#perr').hidden=false;$('#perr').dataset.warned='1';return}EDIT=false;DIRTY.clear();renderPrint()};
+ $('#psave').onclick=async()=>{
+  pw=$('#ppw').value;const er=$('#perr');er.hidden=true;
+  if(!DIRTY.size){er.textContent='沒有需要儲存的修改';er.hidden=false;return}
+  const items=[...DIRTY].map(k=>({key:k,value:CFG[k]?JSON.stringify(CFG[k]):''}));
+  $('#psave').disabled=true;$('#psave').textContent='儲存中';
+  try{await post({action:'admin_print',password:pw,items});DIRTY.clear();$('#psave').textContent='已儲存';$('#psave').disabled=false}
+  catch(x){er.textContent=x.message;er.hidden=false;$('#psave').disabled=false;$('#psave').textContent=`儲存修改（${DIRTY.size}）`}
+ };
+}
+function fitSheets(){
+ const box=document.querySelector('.sheets'),sh=box&&box.querySelector('.sheet');if(!sh)return;
+ box.style.zoom='';const w=sh.offsetWidth,avail=document.documentElement.clientWidth-16;
+ if(w>avail)box.style.zoom=String(Math.floor(avail/w*1000)/1000);
+}
+window.addEventListener('resize',()=>{if(PRINT)fitSheets()});
+function openPicker(target,series){
+ const ids=s=>{const se=PD.data.series.find(x=>x.id===s);return [...new Set([...(PD.gals[s]||[]),...(se?se.items.map(i=>i.img):[])].filter(Boolean))]};
+ const isThumb=target.includes('.thumbs.');
+ let cur=series||PD.data.series[0].id;
+ const draw=()=>{
+  dlg.innerHTML=`<div class="cart" style="max-width:820px"><button class="x" aria-label="關閉" data-close>×</button><h2>選擇圖片</h2>
+  ${series?'':`<label class="f">系列<select id="pkser">${PD.data.series.map(s=>`<option value="${esc(s.id)}" ${s.id===cur?'selected':''}>${esc(s.id)} ${esc(s.name)}</option>`).join('')}</select></label>`}
+  <div class="pick" style="margin-top:12px">${ids(cur).map(p=>`<button data-pk="${esc(p)}" aria-label="選這張"><img loading="lazy" referrerpolicy="no-referrer" src="${img(p,240)}" alt=""></button>`).join('')||'<span class="sub">這個系列找不到照片</span>'}</div>
+  <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">${isThumb?'<button class="ghost" data-pk="-">這格不放圖</button>':''}<button class="ghost" data-pk="">改回預設</button></div></div>`;
+  dlg.querySelector('[data-close]').onclick=()=>dlg.close();
+  const sl=$('#pkser',dlg);if(sl)sl.onchange=()=>{cur=sl.value;draw()};
+  dlg.querySelectorAll('[data-pk]').forEach(b=>b.onclick=()=>{setImg(target,b.dataset.pk);dlg.close();drawPrint()});
+ };
+ draw();if(!dlg.open)dlg.showModal();
+}
+function setImg(target,val){
+ const parts=target.split('.');const c=cfg(parts[0]);
+ if(parts[1]==='thumbs'){c.thumbs=c.thumbs||[null,null,null];c.thumbs[+parts[2]]=val===''?null:val}
+ else{if(val==='')delete c[parts[1]];else c[parts[1]]=val}
+ DIRTY.add(parts[0]);
+}
+dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
+(async()=>{
+ if(PRINT)return renderPrint();
+ if(ADMIN)return adminLogin();
+ try{DATA=await get(STAFF?'staff=1':'');renderShop()}
+ catch(x){$('#app').innerHTML=`<div class="center">型錄暫時無法載入：${esc(x.message)}。請重新整理，或私訊官方 LINE ${LINE}。</div>`}
+})();
+</script>
+</body>
+</html>
