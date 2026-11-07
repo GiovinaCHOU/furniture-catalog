@@ -215,16 +215,16 @@ const preOf=s=>{const p=[...new Set(s.items.map(i=>i.pre).filter(Boolean))];retu
 const coverOf=s=>s.cover||(s.items.find(i=>i.img)||{}).img||'';
 
 /* 運費：同一張訂單取最高級距；樓層費無電梯 2 樓起每層 +200 */
-const RULE_TEXT={order:'每張訂單計一次',large:'僅含大型家具的訂單收取',item:'依件數計算'};
-function fees(lines,floor,elevator,rule=DATA&&DATA.floorRule||'order',per=DATA&&DATA.perFloor||200){
+const RULE_TEXT={order:'每張訂單計一次',large:'僅含大型家具的訂單收取',item:'大型家具依件數計算'};
+function fees(lines,floor,elevator,rule=DATA&&DATA.floorRule||'item',per=DATA&&DATA.perFloor||250){
  const ship=lines.length?Math.max(...lines.map(l=>l.ship||1200)):0;
- const q=lines.reduce((a,l)=>a+l.qty,0);
+ const q=lines.filter(l=>(l.ship||1200)>=1200).reduce((a,l)=>a+l.qty,0);
  const f=Math.floor(Number(floor))||0;let ff=0;
  if(elevator==='無'&&f>=2){const p=(f-1)*per;ff=rule==='item'?p*q:rule==='large'?(ship>=1200?p:0):p}
  return {ship,floorFee:ff};
 }
-function shipInfo(){const r=DATA.floorRule||'order';return `<div><h3>運費</h3><ul><li>小件 NT$160：餐椅、燈飾、6,000 元以下餐桌等</li><li>大型家具 NT$1,200：沙發、地毯、餐桌、邊櫃、茶几等</li><li>同一張訂單只收一次，有大型家具時以 NT$1,200 計</li></ul></div>
-<div><h3>樓層費</h3><ul><li>無電梯 2 樓起，每層加收 NT$${num(DATA.perFloor||200)}（${RULE_TEXT[r]}）</li><li>有電梯不另收</li></ul></div>`}
+function shipInfo(){const r=DATA.floorRule||'item';return `<div><h3>運費</h3><ul><li>小件 NT$160：餐椅、燈飾、6,000 元以下餐桌等</li><li>大型家具 NT$1,200：沙發、地毯、餐桌、邊櫃、茶几等</li><li>同一張訂單只收一次，有大型家具時以 NT$1,200 計</li></ul></div>
+<div><h3>樓層費</h3><ul><li>大型家具無電梯 2 樓起，每層加收 NT$${num(DATA.perFloor||250)}（${RULE_TEXT[r]}）</li><li>有電梯不另收</li><li>小件以新竹物流寄送，送達一樓或管理室，無法搬運上樓</li></ul></div>`}
 function infoBlock(){return `<section class="info"><h2>訂購須知</h2><div class="cols">
 <div><h3>預購</h3><ul><li>家具皆為預購商品，到貨天數依各商品標示</li><li>實木與天然石材的紋理、色澤各有不同，屬正常現象</li></ul></div>
 ${shipInfo()}${STAFF?'<div><h3>員工價</h3><ul><li>員工價為售價 8 折</li><li>運費與樓層費不打折</li></ul></div>':''}
@@ -300,7 +300,7 @@ function openCart(){
  ${cart.length?`<form id="of"><label class="f">姓名<input name="name" required maxlength="30" value="${esc(v.name)}" autocomplete="name"></label>
  <div class="two"><label class="f">電話<input name="phone" required maxlength="20" inputmode="tel" value="${esc(v.phone)}" autocomplete="tel"></label>
  <label class="f">部門<input name="dept" required maxlength="30" value="${esc(v.dept)}"></label></div>
- <label class="f">配送地址<input name="address" required maxlength="120" value="${esc(v.address)}" autocomplete="street-address" placeholder="縣市、區、路名門牌"></label>
+ <label class="f">配送地址<input name="address" required maxlength="120" value="${esc(v.address)}" autocomplete="street-address" placeholder="縣市、區、路名門牌"></label>${lines.every(l=>l.ship<1200)?'<p class="sub" style="margin:6px 0 0">這張訂單都是小件，會以新竹物流寄到一樓或管理室，不收樓層費。</p>':''}
  <div class="two"><label class="f">樓層<input name="floor" type="number" min="1" max="99" required inputmode="numeric" value="${esc(v.floor)}" placeholder="例：3"></label>
  <div class="f" style="margin-top:12px;font-size:14px;color:var(--soft)">有無電梯<div class="radios"><label><input type="radio" name="elevator" value="有" required ${v.elevator==='有'?'checked':''}>有</label><label><input type="radio" name="elevator" value="無" required ${v.elevator==='無'?'checked':''}>無</label></div></div></div>
  <label class="f">備註<textarea name="note" rows="2" maxlength="200">${esc(v.note)}</textarea></label>
@@ -371,7 +371,7 @@ function renderAdmin(){
  <div class="sum" id="aq" hidden></div><p class="err" id="ae" hidden></p><div class="bar"><button type="button" class="ghost" id="aqb">試算金額</button><button class="primary">建立訂單</button></div></form>
  <p class="sub">客戶訂單以售價計算，員工訂單以員工價計算。後台可訂購未上架的品編，共 ${AD.skus.length} 個品編。</p>`;
  if(tab==='cover')body=CAT?`<p class="sub">點系列展開，從現有照片中點一張設為型錄首圖。未設定時使用第一個款式的照片。照片來源是試算表的圖片網址，以及「圖片資料夾」欄的雲端資料夾。</p><div class="covers">${CAT.series.map(s=>`<details class="cv" data-cv="${esc(s.id)}"><summary><img referrerpolicy="no-referrer" src="${img(coverOf(s),160)}" alt=""><span><span class="dot" style="background:${cc(s.cat)}"></span> ${esc(s.id)} ${esc(s.name)}<br><small class="sub">${s.cover?'已自訂首圖':'預設首圖'}</small></span></summary><div class="pick" data-pick="${esc(s.id)}"><span class="sub">載入照片中</span></div>${s.cover?`<button class="linkbtn" data-reset="${esc(s.id)}" style="margin-top:8px">改回預設首圖</button>`:''}</details>`).join('')}</div>`:'<p class="sub">載入型錄中</p>';
- if(tab==='set')body=`<h3 style="margin-top:8px">樓層費計算方式</h3><p class="sub">無電梯 2 樓起，每層 NT$200。確認廠商規則後在這裡切換，網站與新訂單會一起更新。</p>
+ if(tab==='set')body=`<h3 style="margin-top:8px">樓層費計算方式</h3><p class="sub">無電梯 2 樓起，每層 NT$250。小件以新竹物流寄到一樓或管理室，不收樓層費。廠商規則有變時在這裡切換，網站與新訂單會一起更新。</p>
  <div class="opts">${Object.entries(RULE_TEXT).map(([k,t])=>`<button class="opt" aria-pressed="${AD.floorRule===k}" data-rule="${k}">${t}</button>`).join('')}</div>
  <h3 style="margin-top:24px">資料更新</h3><p class="sub">試算表的修改最多 5 分鐘內會同步；新增圖片到資料夾後最多 10 分鐘。想立即更新請按下方按鈕。</p><button class="ghost" id="rfc">立即更新型錄與圖片</button>`;
  $('#app').innerHTML=`<div class="wrap"><header class="top"><h1 style="font-size:36px">家具型錄後台</h1><p><a href="?view=staff">員工下單頁</a>｜<a href="./">客戶型錄頁</a>｜<a href="?view=print">型錄輸出</a></p></header>
@@ -486,11 +486,11 @@ function drawPrint(){
   ${cats.map(c=>{const list=data.series.filter(s=>s.cat===c);return `<div class="ci"><i style="background:${cc(c)}"></i><h3>${esc(c)}</h3><span>${list.map(s=>esc(s.name)).join('、')}</span><em>P.${first[c]}</em></div>`}).join('')}
   <div class="sh-info" style="margin-top:6mm"><div data-edit="TOC.html" data-html="1">${CFG.TOC&&CFG.TOC.html?cleanHtml(CFG.TOC.html):`<h3>關於預購</h3><p>本型錄家具皆為預購商品，到貨天數依各頁標示。實木與天然石材的紋理、色澤各有不同，屬正常現象。</p>`}</div></div>
   <div style="flex:1"></div><div class="sh-foot"><span>商品資訊僅供參考，實際以商品標示為準</span><span>2</span></div></section>`;
- const rule=data.floorRule||'order';
+ const rule=data.floorRule||'item';
  const info=`<section class="sheet" data-key="INFO">${EDIT?`<button class="resetpage" data-reset-page="INFO">還原此頁</button>`:''}<div class="sh-top"><b>YUNGMEI LIVING 永美家居</b><span>家具型錄</span></div><div class="sh-info"><div data-edit="INFO.html" data-html="1">${CFG.INFO&&CFG.INFO.html?cleanHtml(CFG.INFO.html):`<div class="sh-title"><h2>訂購須知</h2></div>
   <h3>運費</h3><table class="ptab"><tr><th>級距</th><th>適用品項</th><th class="n">運費</th></tr><tr><td>小件</td><td>餐椅、燈飾、6,000 元以下餐桌等</td><td class="n">NT$160</td></tr><tr><td>大型家具</td><td>沙發、地毯、餐桌、邊櫃、茶几等</td><td class="n">NT$1,200</td></tr></table>
   <p style="margin-top:2mm">同一張訂單只收一次運費，有大型家具時以 NT$1,200 計。</p>
-  <h3>樓層費</h3><p>無電梯 2 樓起，每層加收 NT$${num(data.perFloor||200)}（${RULE_TEXT[rule]}），有電梯不另收。</p>
+  <h3>樓層費</h3><p>大型家具無電梯 2 樓起，每層加收 NT$${num(data.perFloor||250)}（${RULE_TEXT[rule]}），有電梯不另收。</p><p>小件以新竹物流寄送，送達一樓或管理室，無法搬運上樓。</p>
   ${showStaff?'<h3>員工價</h3><p>員工價為售價 8 折，運費與樓層費不打折。</p>':''}
   <h3>預購與到貨</h3><p>家具皆為預購商品，到貨天數依各商品標示。實木與天然石材的紋理、色澤各有不同，屬正常現象；商品顏色以實品為準。</p>`}</div>
   <h3>訂購與詢問</h3><div style="display:flex;justify-content:space-between;align-items:flex-end;gap:8mm"><p>官方 LINE ${LINE}<br>永美室內裝修設計有限公司<br>新北市永和區自由街55號1樓<br>(02) 2923-0218</p>${qrBlock}</div></div><div style="flex:1"></div><div class="sh-foot"><span></span><span>${p}</span></div></section>`;
