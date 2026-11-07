@@ -199,7 +199,7 @@ const $=(s,r=document)=>r.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=n=>Math.round(Number(n)).toLocaleString('en-US');
 const money=n=>'NT$'+num(n);
-const img=(x,w=900)=>{if(!x)return '';x=String(x);if(/^https?:\/\//.test(x))return x.replace(/\/w:\d+\//,`/w:${Math.min(1920,w)}/`);return `https://lh3.googleusercontent.com/d/${encodeURIComponent(x)}=w${w}`};
+const img=(x,w=900)=>{if(!x)return '';x=String(x);if(/^https?:\/\//.test(x))return x;return `https://lh3.googleusercontent.com/d/${encodeURIComponent(x)}=w${w}`};
 const safeUrl=u=>/^https?:\/\//.test(String(u))?String(u):'';
 const cc=c=>CATC[c]||'#7A6656';
 let DATA=null,filter='全部',cart=[],sel=null,pw='';
