@@ -144,6 +144,7 @@ td input{width:76px;text-align:right}
 .sku{display:block;font-size:7.5pt;color:var(--soft);letter-spacing:.02em}
 .sheet.dense .sh-main{height:90mm}.sheet.dense .sh-thumbs{height:30mm}.sheet.dense .sh-body{font-size:9pt;margin-top:4mm}.sheet.dense .ptab{font-size:8.5pt}.sheet.dense .ptab td{padding:1mm 2mm}
 .sheet.denser .sh-main{height:74mm}.sheet.denser .sh-thumbs{display:none}
+.sheet.tight .sh-title{margin:3.5mm 0 3mm}.sheet.tight .sh-body{font-size:9pt;line-height:1.55;margin-top:3.5mm}.sheet.tight .sh-table{margin-top:3mm}.sheet.tight .ptab{font-size:8.5pt}.sheet.tight .ptab td{padding:1mm 2mm}
 .sh-foot{display:flex;justify-content:space-between;font-size:8pt;color:var(--soft);border-top:.3mm solid var(--line);padding-top:2.5mm;margin-top:3mm}
 /* 右側分類色標 */
 .ctab{position:absolute;right:0;width:9mm;height:24mm;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9pt;letter-spacing:.3em;writing-mode:vertical-rl;font-family:"Noto Serif TC",serif;font-weight:700}
@@ -525,7 +526,7 @@ function drawPrint(){
   :`<button class="ghost" id="pedit">編輯內容與圖片</button><label><input type="checkbox" id="pstaff" ${showStaff?'checked':''}> 顯示員工價</label><label>分類 <select id="pcat"><option value="">全部</option>${cats.map(c=>`<option ${PD.only===c?'selected':''}>${esc(c)}</option>`).join('')}</select></label><button class="primary" id="pp">列印 / 存成 PDF</button>`}
   <a href="?view=admin">回後台</a><span class="err" id="perr" hidden></span></div>
   <div class="sheets${EDIT?' editing':''}">${PD.only?'':cover+toc}${PD.only?pages.filter((x,k)=>data.series[k].cat===PD.only).join(''):pages.join('')}${PD.only?'':info}</div>`;
- document.querySelectorAll('.sheet').forEach(s=>{const over=()=>s.scrollHeight>s.clientHeight+1||[...s.children].some(ch=>ch.offsetTop+ch.offsetHeight>s.clientHeight);if(over())s.classList.add('dense');if(over())s.classList.add('denser')});
+ fitAll();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitAll);
  fitSheets();
  const imgs=[...document.querySelectorAll('.sheet img')];let done=0;imgs.forEach(i=>i.addEventListener('error',()=>{i.style.visibility='hidden'}));const tick=()=>{done++;if(done>=imgs.length)$('#pst').textContent=`共 ${document.querySelectorAll('.sheet').length} 頁，${EDIT?'編輯中':'可以列印了'}`};
  imgs.forEach(i=>{if(i.complete)tick();else{i.addEventListener('load',tick);i.addEventListener('error',tick)}});if(!imgs.length)tick();
@@ -538,6 +539,7 @@ function drawPrint(){
  }
  document.querySelectorAll('[data-edit]').forEach(el=>{
   el.contentEditable='true';el.spellcheck=false;
+  el.addEventListener('input',()=>{clearTimeout(el.__ft);el.__ft=setTimeout(()=>fitPage(el.closest('.sheet')),400)});
   el.addEventListener('input',()=>{const [k,f]=el.dataset.edit.split('.');cfg(k)[f]=el.dataset.html?cleanHtml(el.innerHTML):el.innerText.trim();DIRTY.add(k);$('#psave').textContent=`儲存修改（${DIRTY.size}）`});
  });
  document.querySelectorAll('[data-img]').forEach(el=>el.onclick=()=>openPicker(el.dataset.img,el.dataset.series));
@@ -552,6 +554,27 @@ function drawPrint(){
   try{await post({action:'admin_print',password:pw,items});DIRTY.clear();$('#psave').textContent='已儲存';$('#psave').disabled=false}
   catch(x){er.textContent=x.message;er.hidden=false;$('#psave').disabled=false;$('#psave').textContent=`儲存修改（${DIRTY.size}）`}
  };
+}
+/* 自動排版：同一系列維持一頁。內容放不下時，依序微縮照片高度、縮小行距字級，最後才拿掉小圖。 */
+const FIT_STEPS=[[112,38,0],[106,36,0],[100,35,0],[94,34,0],[88,32,0],[88,32,1],[82,30,1],[76,28,1],[70,27,1],[64,26,1],[58,24,1],[52,22,1],[64,0,1],[56,0,1],[48,0,1]];
+function fitPage(sh){
+ if(!sh)return 0;
+ const main=sh.querySelector('.sh-main'),th=sh.querySelector('.sh-thumbs'),tb=sh.querySelector('.sh-table'),foot=sh.querySelector('.sh-foot');
+ if(!main||!tb)return 0;
+ const over=()=>tb.scrollHeight>tb.clientHeight+1||(foot&&foot.offsetTop+foot.offsetHeight>sh.clientHeight-4);
+ for(let i=0;i<FIT_STEPS.length;i++){
+  const [m,t,tight]=FIT_STEPS[i];
+  main.style.height=m+'mm';
+  if(th){th.style.height=t?t+'mm':'';th.style.display=t?'':'none'}
+  sh.classList.toggle('tight',!!tight);
+  if(!over()){sh.dataset.fit=i;return i}
+ }
+ sh.dataset.fit='over';return -1;
+}
+function fitAll(){
+ const bad=[];
+ document.querySelectorAll('.sheet').forEach(s=>{if(fitPage(s)<0)bad.push(s.querySelector('.sh-foot span:last-child')?.textContent.split('｜').pop()||'?')});
+ const st=$('#pst');if(st&&bad.length)st.textContent=`第 ${bad.join('、')} 頁內容太多，請刪減文字`;
 }
 function fitSheets(){
  const box=document.querySelector('.sheets'),sh=box&&box.querySelector('.sheet');if(!sh)return;
