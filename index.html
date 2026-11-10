@@ -168,7 +168,11 @@ td input{width:76px;text-align:right}
 .sh-info p{margin:0 0 2mm}
 .editing [data-edit]{outline:1px dashed var(--accent);outline-offset:1mm;cursor:text}
 .editing [data-edit]:focus{outline:2px solid var(--accent);background:#FFFDF8}
-.editing [data-img]{cursor:pointer;position:relative}
+[data-img]{overflow:hidden;position:relative}.editing [data-img]{cursor:pointer}
+.adjbtn{position:absolute;right:2mm;bottom:2mm;z-index:2;background:rgba(255,255,255,.92);border:1px solid var(--line);font-size:12px;padding:3px 9px;cursor:pointer}
+.adjbox{position:relative;overflow:hidden;background:var(--paper);margin:12px auto 0;max-width:100%;cursor:grab;touch-action:none;user-select:none}.adjbox:active{cursor:grabbing}.adjbox img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.adjbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}.adjbar input[type=range]{flex:1;min-width:160px}
+@media print{.adjbtn{display:none}}
 .editing [data-img]:hover{outline:3px solid var(--accent);outline-offset:-3px}
 .slot-empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--soft);font-size:9pt}
 .resetpage{position:absolute;top:3mm;right:12mm;z-index:3;font-size:12px;background:#fff;border:1px solid var(--line);padding:3px 8px}
@@ -462,9 +466,12 @@ async function renderPrint(){
  }catch(x){$('#app').innerHTML=`<div class="center">型錄無法載入：${esc(x.message)}</div>`;return}
  drawPrint();
 }
+/* 圖片取景：x、y 為對齊點（0–100%），z 為放大倍率；存在各頁設定的 pos 裡 */
+function posOf(key){const i=key.indexOf('.');const c=CFG[key.slice(0,i)];return c&&c.pos&&c.pos[key.slice(i+1)]||null}
+const posCss=ps=>ps?`object-position:${ps.x}% ${ps.y}%;transform:scale(${ps.z});transform-origin:${ps.x}% ${ps.y}%`:'';
 function slot(key,series,id,w,cls=''){
  const has=id&&id!=='-';
- return `<div class="${cls}" data-img="${esc(key)}" data-series="${esc(series)}">${has?`<img referrerpolicy="no-referrer" src="${img(id,w)}" alt="">`:(EDIT?'<span class="slot-empty">點擊選圖</span>':'')}</div>`;
+ return `<div class="${cls}" data-img="${esc(key)}" data-series="${esc(series)}">${has?`<img referrerpolicy="no-referrer" src="${img(id,w)}" alt="" style="${posCss(posOf(key))}">${EDIT?`<button type="button" class="adjbtn" data-adj="${esc(key)}">調整位置</button>`:''}`:(EDIT?'<span class="slot-empty">點擊選圖</span>':'')}</div>`;
 }
 function seriesPage(s,pageNo,showStaff,cats){
  const key='S_'+s.id,c=CFG[key]||{};
@@ -534,6 +541,7 @@ function drawPrint(){
   el.addEventListener('input',()=>{const [k,f]=el.dataset.edit.split('.');cfg(k)[f]=el.dataset.html?cleanHtml(el.innerHTML):el.innerText.trim();DIRTY.add(k);$('#psave').textContent=`儲存修改（${DIRTY.size}）`});
  });
  document.querySelectorAll('[data-img]').forEach(el=>el.onclick=()=>openPicker(el.dataset.img,el.dataset.series));
+ document.querySelectorAll('[data-adj]').forEach(b=>b.onclick=e=>{e.stopPropagation();openAdjust(b.dataset.adj,b.parentElement)});
  document.querySelectorAll('[data-reset-page]').forEach(b=>b.onclick=()=>{const k=b.dataset.resetPage;CFG[k]=null;DIRTY.add(k);drawPrint()});
  $('#pdone').onclick=()=>{if(DIRTY.size&&!$('#perr').dataset.warned){$('#perr').textContent='還有未儲存的修改，再按一次「完成編輯」會放棄修改';$('#perr').hidden=false;$('#perr').dataset.warned='1';return}EDIT=false;DIRTY.clear();renderPrint()};
  $('#psave').onclick=async()=>{
@@ -566,8 +574,38 @@ function openPicker(target,series){
  };
  draw();if(!dlg.open)dlg.showModal();
 }
+function openAdjust(key,el){
+ const im=el.querySelector('img');if(!im)return;
+ const r=el.getBoundingClientRect();const ratio=r.width/r.height;
+ const W=Math.min(640,window.innerWidth-80),H=Math.round(W/ratio),BH=Math.min(H,window.innerHeight*0.55),BW=Math.round(BH*ratio);
+ let ps={...(posOf(key)||{x:50,y:50,z:1})};
+ dlg.innerHTML=`<div class="cart" style="max-width:720px"><button class="x" aria-label="關閉" data-close>×</button><h2>調整位置</h2>
+ <p class="sub">拖曳照片移動取景，用滑桿或滑鼠滾輪放大縮小。框內看到的就是印出來的範圍。</p>
+ <div class="adjbox" id="ab" style="width:${BW}px;height:${BH}px"><img referrerpolicy="no-referrer" src="${esc(im.src)}" alt=""></div>
+ <div class="adjbar"><label for="az">縮放</label><input type="range" id="az" min="1" max="3" step="0.01"><span id="azv" style="width:3.5em"></span></div>
+ <div class="adjbar"><button class="ghost" id="ar">重設</button><span style="flex:1"></span><button class="ghost" data-close>取消</button><button class="primary" id="ao">套用</button></div></div>`;
+ const box=$('#ab',dlg),pic=$('img',box),z=$('#az',dlg);
+ const paint=()=>{pic.style.cssText=posCss(ps);z.value=ps.z;$('#azv',dlg).textContent=ps.z.toFixed(2)+'×'};
+ const clamp=v=>Math.max(0,Math.min(100,v));
+ let drag=null;
+ box.onpointerdown=e=>{drag={x:e.clientX,y:e.clientY,px:ps.x,py:ps.y};box.setPointerCapture(e.pointerId)};
+ box.onpointermove=e=>{if(!drag)return;
+  const nw=pic.naturalWidth||1,nh=pic.naturalHeight||1,cover=Math.max(BW/nw,BH/nh);
+  const ox=Math.max(1,nw*cover*ps.z-BW),oy=Math.max(1,nh*cover*ps.z-BH);
+  ps.x=clamp(drag.px-(e.clientX-drag.x)/ox*100);ps.y=clamp(drag.py-(e.clientY-drag.y)/oy*100);paint()};
+ box.onpointerup=box.onpointercancel=()=>{drag=null};
+ box.onwheel=e=>{e.preventDefault();ps.z=Math.max(1,Math.min(3,ps.z*(e.deltaY<0?1.06:1/1.06)));paint()};
+ z.oninput=()=>{ps.z=+z.value;paint()};
+ $('#ar',dlg).onclick=()=>{ps={x:50,y:50,z:1};paint()};
+ $('#ao',dlg).onclick=()=>{const i=key.indexOf('.');const c=cfg(key.slice(0,i));c.pos=c.pos||{};
+  const def=ps.x===50&&ps.y===50&&ps.z===1;if(def)delete c.pos[key.slice(i+1)];else c.pos[key.slice(i+1)]={x:Math.round(ps.x*10)/10,y:Math.round(ps.y*10)/10,z:Math.round(ps.z*100)/100};
+  DIRTY.add(key.slice(0,i));dlg.close();drawPrint()};
+ dlg.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>dlg.close());
+ paint();if(!dlg.open)dlg.showModal();
+}
 function setImg(target,val){
  const parts=target.split('.');const c=cfg(parts[0]);
+ if(c.pos)delete c.pos[parts.slice(1).join('.')];
  if(parts[1]==='thumbs'){c.thumbs=c.thumbs||[null,null,null];c.thumbs[+parts[2]]=val===''?null:val}
  else{if(val==='')delete c[parts[1]];else c[parts[1]]=val}
  DIRTY.add(parts[0]);
