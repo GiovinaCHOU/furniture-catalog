@@ -107,7 +107,7 @@ td.n,th.n{text-align:right}
 td select,td input{padding:4px;border:1px solid var(--line);background:#fff}
 td input{width:76px;text-align:right}
 .foot{font-size:13px;padding:0 0 32px;margin:0}.foot a{color:var(--soft)}
-.covers{display:grid;gap:14px}.cv{border-bottom:1px solid var(--line);padding:10px 0}.cv summary{cursor:pointer;display:flex;gap:12px;align-items:center}.cv summary img{width:56px;height:70px;object-fit:cover;background:var(--paper)}.pick{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.pick button{padding:0;border:3px solid transparent;background:var(--paper);width:96px;height:120px}.pick button[aria-pressed=true]{border-color:var(--head)}.pick img{width:100%;height:100%;object-fit:cover}
+.covers{display:grid;gap:14px}.cv{border-bottom:1px solid var(--line);padding:10px 0}.cv summary{cursor:pointer;display:flex;gap:12px;align-items:center}.cv summary img{width:56px;height:70px;object-fit:cover;background:var(--paper)}.pick{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.tile{position:relative;width:96px;cursor:grab;user-select:none}.tile.dragging{opacity:.35}.tile.over{outline:2px dashed var(--head);outline-offset:2px}.tile img{width:96px;height:120px;object-fit:cover;background:var(--paper);display:block;pointer-events:none}.tile .badge{position:absolute;left:0;top:0;background:var(--head);color:#fff;font-size:11px;padding:1px 6px}.tile .no{position:absolute;right:0;top:0;background:rgba(255,255,255,.85);font-size:11px;padding:0 5px}.tile .mv{display:flex;justify-content:space-between;margin-top:2px}.tile .mv button{background:none;border:1px solid var(--line);font-size:12px;padding:0 8px;line-height:22px}.pick>button{padding:0;border:3px solid transparent;background:var(--paper);width:96px;height:120px}.pick>button[aria-pressed=true]{border-color:var(--head)}.pick>button img{width:100%;height:100%;object-fit:cover}
 .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
 
 /* 型錄輸出 */
@@ -213,6 +213,8 @@ const shownPrice=i=>STAFF?i.staff:i.price;
 const skuMap=()=>Object.fromEntries(DATA.series.flatMap(s=>s.items.map(i=>[i.sku,{...i,series:s}])));
 const preOf=s=>{const p=[...new Set(s.items.map(i=>i.pre).filter(Boolean))];return p.length===1?p[0]:p.length?'依款式而定':''};
 const coverOf=s=>s.cover||(s.items.find(i=>i.img)||{}).img||'';
+/* 照片順序：後台拖曳排序的結果優先，新上傳但還沒排序的照片接在後面 */
+function ordered(s,gal){const base=[...new Set([...(gal||[]),...s.items.map(i=>i.img)].filter(Boolean))];const o=(s.order||(s.cover?[s.cover]:[])).filter(x=>base.includes(x));return [...o,...base.filter(x=>!o.includes(x))]}
 
 /* 運費：同一張訂單取最高級距；樓層費無電梯 2 樓起每層 +200 */
 const RULE_TEXT={order:'每張訂單計一次',large:'僅含大型家具的訂單收取',item:'大型家具依件數計算'};
@@ -267,7 +269,7 @@ function specList(s,it){
 function renderDetail(){
  const s=sel.s,it=s.items.find(i=>i.sku===sel.sku);
  const main=sel.photo||it.img||sel.gallery[0]||coverOf(s);
- const thumbs=[...new Set([it.img,...sel.gallery,...s.items.map(i=>i.img)].filter(Boolean))];
+ const thumbs=ordered(s,sel.gallery);
  dlg.innerHTML=`<div class="detail"><div class="stage"><img class="main" referrerpolicy="no-referrer" src="${img(main,1200)}" alt="${esc(s.name)}">
  ${thumbs.length>1?`<div class="thumbs">${thumbs.map(t=>`<button data-t="${esc(t)}" aria-current="${t===main}" aria-label="查看其他照片"><img loading="lazy" referrerpolicy="no-referrer" src="${img(t,160)}" alt=""></button>`).join('')}</div>`:''}</div>
  <div class="panel"><button class="x" aria-label="關閉" data-close>×</button><h2>${esc(s.name)}</h2><div class="sub">${esc(it.sku)}｜${esc(s.cat)}</div>
@@ -370,7 +372,7 @@ function renderAdmin(){
  <label class="f">備註<input name="note"></label><label class="f">付款方式<select name="method"><option></option><option>現金</option><option>匯款</option></select></label>
  <div class="sum" id="aq" hidden></div><p class="err" id="ae" hidden></p><div class="bar"><button type="button" class="ghost" id="aqb">試算金額</button><button class="primary">建立訂單</button></div></form>
  <p class="sub">客戶訂單以售價計算，員工訂單以員工價計算。後台可訂購未上架的品編，共 ${AD.skus.length} 個品編。</p>`;
- if(tab==='cover')body=CAT?`<p class="sub">點系列展開，從現有照片中點一張設為型錄首圖。未設定時使用第一個款式的照片。照片來源是試算表的圖片網址，以及「圖片資料夾」欄的雲端資料夾。</p><div class="covers">${CAT.series.map(s=>`<details class="cv" data-cv="${esc(s.id)}"><summary><img referrerpolicy="no-referrer" src="${img(coverOf(s),160)}" alt=""><span><span class="dot" style="background:${cc(s.cat)}"></span> ${esc(s.id)} ${esc(s.name)}<br><small class="sub">${s.cover?'已自訂首圖':'預設首圖'}</small></span></summary><div class="pick" data-pick="${esc(s.id)}"><span class="sub">載入照片中</span></div>${s.cover?`<button class="linkbtn" data-reset="${esc(s.id)}" style="margin-top:8px">改回預設首圖</button>`:''}</details>`).join('')}</div>`:'<p class="sub">載入型錄中</p>';
+ if(tab==='cover')body=CAT?`<p class="sub">點系列展開後，拖曳照片調整順序，第一張就是型錄首圖；點兩下照片可以直接移到第一張。順序會用在商品頁的照片和紙本型錄的縮圖。手機可用照片下方的 ◀ ▶ 移動。照片來源是試算表的圖片網址，以及「圖片資料夾」欄的雲端資料夾。</p><div class="covers">${CAT.series.map(s=>`<details class="cv" data-cv="${esc(s.id)}"><summary><img referrerpolicy="no-referrer" src="${img(coverOf(s),160)}" alt=""><span><span class="dot" style="background:${cc(s.cat)}"></span> ${esc(s.id)} ${esc(s.name)}<br><small class="sub">${s.order?'已自訂順序':s.cover?'已自訂首圖':'預設順序'}</small></span></summary><div class="pick" data-pick="${esc(s.id)}"><span class="sub">載入照片中</span></div><button class="linkbtn" data-reset="${esc(s.id)}" style="margin-top:8px">改回預設順序</button></details>`).join('')}</div>`:'<p class="sub">載入型錄中</p>';
  if(tab==='set')body=`<h3 style="margin-top:8px">樓層費計算方式</h3><p class="sub">無電梯 2 樓起，每層 NT$250。小件以新竹物流寄到一樓或管理室，不收樓層費。廠商規則有變時在這裡切換，網站與新訂單會一起更新。</p>
  <div class="opts">${Object.entries(RULE_TEXT).map(([k,t])=>`<button class="opt" aria-pressed="${AD.floorRule===k}" data-rule="${k}">${t}</button>`).join('')}</div>
  <h3 style="margin-top:24px">資料更新</h3><p class="sub">試算表的修改最多 5 分鐘內會同步；新增圖片到資料夾後最多 10 分鐘。想立即更新請按下方按鈕。</p><button class="ghost" id="rfc">立即更新型錄與圖片</button>`;
@@ -384,7 +386,7 @@ function renderAdmin(){
   b.disabled=true;b.textContent='刪除中';
   try{await post({action:'admin_delete',password:pw,id:b.closest('tr').dataset.id});await loadAdmin()}catch(x){alertErr(x.message);b.disabled=false;b.textContent='刪除'}
  });
- $('#app').querySelectorAll('[data-reset]').forEach(b=>b.onclick=()=>saveCover(b.dataset.reset,''));
+ $('#app').querySelectorAll('[data-reset]').forEach(b=>b.onclick=()=>saveOrder(b.dataset.reset,[]));
  $('#app').querySelectorAll('[data-rule]').forEach(b=>b.onclick=async()=>{try{await post({action:'admin_rule',password:pw,rule:b.dataset.rule});AD.floorRule=b.dataset.rule;renderAdmin()}catch(x){alertErr(x.message)}});
  const rfc=$('#rfc');if(rfc)rfc.onclick=async()=>{rfc.disabled=true;try{await post({action:'admin_refresh',password:pw});rfc.textContent='已更新';CAT=null}catch(x){alertErr(x.message)}rfc.disabled=false};
  $('#rf').onclick=loadAdmin;
@@ -411,13 +413,29 @@ async function loadPick(id){
  const box=$(`[data-pick="${id}"]`);if(!box)return;
  const s=CAT.series.find(x=>x.id===id);
  if(!GAL[id]){try{GAL[id]=(await get('action=gallery&series='+encodeURIComponent(id))).images||[]}catch(e){GAL[id]=[]}}
- const ids=[...new Set([...GAL[id],...s.items.map(i=>i.img)].filter(Boolean))];
- const cur=coverOf(s);
- box.innerHTML=ids.length?ids.map(p=>`<button aria-pressed="${p===cur}" data-set="${esc(p)}" aria-label="設為首圖"><img loading="lazy" referrerpolicy="no-referrer" src="${img(p,240)}" alt=""></button>`).join(''):'<span class="sub">這個系列找不到照片，請把圖片放進試算表「圖片資料夾」欄的資料夾。</span>';
- box.querySelectorAll('[data-set]').forEach(b=>b.onclick=()=>saveCover(id,b.dataset.set));
+ let list=ordered(s,GAL[id]);
+ if(!list.length){box.innerHTML='<span class="sub">這個系列找不到照片，請把圖片放進試算表「圖片資料夾」欄的資料夾。</span>';return}
+ const draw=()=>{
+  box.innerHTML=list.map((p,k)=>`<div class="tile" draggable="true" data-k="${k}" title="拖曳調整順序，點兩下設為首圖"><img loading="lazy" referrerpolicy="no-referrer" src="${img(p,240)}" alt="">${k===0?'<span class="badge">首圖</span>':`<span class="no">${k+1}</span>`}<div class="mv"><button type="button" data-l="${k}" aria-label="往前移" ${k?'':'disabled'}>◀</button><button type="button" data-r="${k}" aria-label="往後移" ${k<list.length-1?'':'disabled'}>▶</button></div></div>`).join('')+'<p class="sub" data-st style="width:100%;margin:4px 0 0"></p>';
+  let from=null;
+  box.querySelectorAll('.tile').forEach(t=>{
+   t.ondragstart=e=>{from=+t.dataset.k;t.classList.add('dragging');e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain',String(from))}catch(x){}};
+   t.ondragend=()=>{t.classList.remove('dragging');box.querySelectorAll('.over').forEach(x=>x.classList.remove('over'))};
+   t.ondragover=e=>{e.preventDefault();t.classList.add('over')};
+   t.ondragleave=()=>t.classList.remove('over');
+   t.ondrop=e=>{e.preventDefault();const to=+t.dataset.k;if(from===null||from===to)return;move(from,to)};
+   t.ondblclick=()=>{const k=+t.dataset.k;if(k)move(k,0)};
+  });
+  box.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{const k=+b.dataset.l;move(k,k-1)});
+  box.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{const k=+b.dataset.r;move(k,k+1)});
+ };
+ const move=async(a,b)=>{const [x]=list.splice(a,1);list.splice(b,0,x);draw();const st=box.querySelector('[data-st]');st.textContent='儲存中…';
+  try{await post({action:'admin_imgorder',password:pw,series:id,order:list});s.order=list.slice();s.cover=list[0];st.textContent='已儲存';const sm=$(`[data-cv="${id}"] summary img`);if(sm)sm.src=img(list[0],160)}
+  catch(e){st.textContent='儲存失敗：'+e.message}};
+ draw();
 }
-async function saveCover(id,image){
- try{await post({action:'admin_cover',password:pw,series:id,image});const s=CAT.series.find(x=>x.id===id);if(image)s.cover=image;else delete s.cover;renderAdmin();const d=$(`[data-cv="${id}"]`);if(d){d.open=true;loadPick(id)}}
+async function saveOrder(id,order){
+ try{await post({action:'admin_imgorder',password:pw,series:id,order});const s=CAT.series.find(x=>x.id===id);if(order.length){s.order=order;s.cover=order[0]}else{delete s.order;delete s.cover}renderAdmin();const d=$(`[data-cv="${id}"]`);if(d){d.open=true;loadPick(id)}}
  catch(x){alertErr(x.message)}
 }
 function alertErr(m){const p=document.createElement('p');p.className='err';p.textContent=m;$('#app .wrap').prepend(p)}
@@ -451,7 +469,7 @@ function slot(key,series,id,w,cls=''){
 function seriesPage(s,pageNo,showStaff,cats){
  const key='S_'+s.id,c=CFG[key]||{};
  const main=c.main||coverOf(s);
- const auto=[...new Set([...(PD.gals[s.id]||[]),...s.items.map(i=>i.img)].filter(p=>p&&p!==main))];
+ const auto=ordered(s,PD.gals[s.id]).filter(p=>p!==main);
  const th=[0,1,2].map(n=>c.thumbs&&c.thumbs[n]!=null?c.thumbs[n]:auto[n]);
  const showThumbs=EDIT||th.some(t=>t&&t!=='-');
  const pres=new Set(s.items.map(i=>i.pre).filter(Boolean));const preCol=pres.size>1;
