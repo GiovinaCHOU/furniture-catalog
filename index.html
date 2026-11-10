@@ -176,8 +176,9 @@ td input{width:76px;text-align:right}
 @media print{.adjbtn{display:none}}
 .editing [data-img]:hover{outline:3px solid var(--accent);outline-offset:-3px}
 .slot-empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--soft);font-size:9pt}
+.layoutsel{position:absolute;top:3mm;right:34mm;z-index:3;font-size:12px;background:#fff;border:1px solid var(--line);padding:2px 6px}.layoutsel select{font-size:12px;border:0;background:none}
 .resetpage{position:absolute;top:3mm;right:12mm;z-index:3;font-size:12px;background:#fff;border:1px solid var(--line);padding:3px 8px}
-@media print{.resetpage,.slot-empty{display:none}.editing [data-edit]{outline:none}}
+@media print{.resetpage,.layoutsel,.slot-empty{display:none}.editing [data-edit]{outline:none}}
 @media print{html,body{margin:0;padding:0}body{background:#fff}.ptool{display:none}.sheets{zoom:1!important}.sheet{height:296mm;break-inside:avoid;page-break-inside:avoid}.wk-print .sheet{zoom:.88;margin:0 auto}.sheets{padding:0;gap:0;background:#fff;display:block}.sheet{box-shadow:none;page-break-after:always;break-after:page}.sheet:last-child{page-break-after:auto;break-after:auto}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @media(max-width:760px){.cartbtn{position:fixed;right:16px;bottom:16px;z-index:6;padding:12px 20px;margin:0}.detail{grid-template-columns:1fr}.stage .main{aspect-ratio:1}dialog{height:100dvh}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.card h2{font-size:17px}}
 @media(prefers-reduced-motion:no-preference){.main{transition:opacity .2s}}
@@ -478,7 +479,8 @@ function seriesPage(s,pageNo,showStaff,cats){
  const key='S_'+s.id,c=CFG[key]||{};
  const main=c.main||coverOf(s);
  const auto=ordered(s,PD.gals[s.id]).filter(p=>p!==main);
- const th=[0,1,2].map(n=>c.thumbs&&c.thumbs[n]!=null?c.thumbs[n]:auto[n]);
+ const nT=[3,4,5].includes(c.layout)?c.layout:3;
+ const th=Array.from({length:nT},(_,n)=>c.thumbs&&c.thumbs[n]!=null?c.thumbs[n]:auto[n]);
  const showThumbs=EDIT||th.some(t=>t&&t!=='-');
  const pres=new Set(s.items.map(i=>i.pre).filter(Boolean));const preCol=pres.size>1;
  const spec=specList(s,preCol?null:{pre:[...pres][0]||''});
@@ -488,10 +490,10 @@ function seriesPage(s,pageNo,showStaff,cats){
  const head=`<tr><th>款式</th>${preCol?'<th>預購</th>':''}<th class="n">售價</th>${showStaff?'<th class="n">員工價</th>':''}</tr>`;
  const split=rows.length>6;const half=Math.ceil(rows.length/2);
  const tables=split?[rows.slice(0,half),rows.slice(half)]:[rows];
- return `<section class="sheet" data-key="${key}">${catTabs(cats,s.cat)}${EDIT?`<button class="resetpage" data-reset-page="${key}">還原此頁</button>`:''}<div class="sh-top"><b>YUNGMEI LIVING 永美家居</b><span>家具型錄｜${esc(s.cat)}</span></div>
+ return `<section class="sheet" data-key="${key}">${catTabs(cats,s.cat)}${EDIT?`<button class="resetpage" data-reset-page="${key}">還原此頁</button><label class="layoutsel">版型 <select data-layout="${key}">${[3,4,5].map(v=>`<option value="${v}" ${v===nT?'selected':''}>首圖＋${v} 張小圖</option>`).join('')}</select></label>`:''}<div class="sh-top"><b>YUNGMEI LIVING 永美家居</b><span>家具型錄｜${esc(s.cat)}</span></div>
  <div class="sh-title"><h2 data-edit="${key}.name">${esc(c.name||s.name)}</h2><span>品編 ${esc(s.id)} 系列</span></div>
  ${slot(key+'.main',s.id,main,1600,'sh-main')}
- ${showThumbs?`<div class="sh-thumbs">${th.map((t,n)=>slot(key+'.thumbs.'+n,s.id,t,700)).join('')}</div>`:''}
+ ${showThumbs?`<div class="sh-thumbs" data-n="${nT}" style="grid-template-columns:repeat(${nT},1fr)">${th.map((t,n)=>slot(key+'.thumbs.'+n,s.id,t,700)).join('')}</div>`:''}
  <div class="sh-body"><div data-edit="${key}.left" data-html="1">${c.left!==undefined?cleanHtml(c.left):defLeft}</div><div data-edit="${key}.right" data-html="1">${c.right!==undefined?cleanHtml(c.right):defRight}</div></div>
  <div class="sh-table"><div class="ptabs${split?' cols2':''}">${tables.map(t=>`<table class="ptab">${head}${t.join('')}</table>`).join('')}</div></div>
  <div class="sh-foot"><span>運費另計${showStaff?'｜員工價為售價 8 折，運費不打折':''}｜實際顏色以實品為準</span><span>官方 LINE ${LINE}${PD.showPN?'｜'+pageNo:''}</span></div></section>`;
@@ -546,6 +548,7 @@ function drawPrint(){
  document.querySelectorAll('[data-img]').forEach(el=>el.onclick=()=>openPicker(el.dataset.img,el.dataset.series));
  document.querySelectorAll('[data-adj]').forEach(b=>b.onclick=e=>{e.stopPropagation();openAdjust(b.dataset.adj,b.parentElement)});
  document.querySelectorAll('[data-reset-page]').forEach(b=>b.onclick=()=>{const k=b.dataset.resetPage;CFG[k]=null;DIRTY.add(k);drawPrint()});
+ document.querySelectorAll('[data-layout]').forEach(sl=>sl.onchange=()=>{const k=sl.dataset.layout,v=+sl.value;if(v===3)delete cfg(k).layout;else cfg(k).layout=v;DIRTY.add(k);drawPrint()});
  $('#pdone').onclick=()=>{if(DIRTY.size&&!$('#perr').dataset.warned){$('#perr').textContent='還有未儲存的修改，再按一次「完成編輯」會放棄修改';$('#perr').hidden=false;$('#perr').dataset.warned='1';return}EDIT=false;DIRTY.clear();renderPrint()};
  $('#psave').onclick=async()=>{
   pw=$('#ppw').value;const er=$('#perr');er.hidden=true;
@@ -566,7 +569,7 @@ function fitPage(sh){
  for(let i=0;i<FIT_STEPS.length;i++){
   const [m,t,tight]=FIT_STEPS[i];
   main.style.height=m+'mm';
-  if(th){th.style.height=t?t+'mm':'';th.style.display=t?'':'none'}
+  if(th){const f={4:.85,5:.74}[th.dataset.n]||1;th.style.height=t?Math.round(t*f)+'mm':'';th.style.display=t?'':'none'}
   sh.classList.toggle('tight',!!tight);
   if(!over()){sh.dataset.fit=i;return i}
  }
@@ -630,7 +633,7 @@ function openAdjust(key,el){
 function setImg(target,val){
  const parts=target.split('.');const c=cfg(parts[0]);
  if(c.pos)delete c.pos[parts.slice(1).join('.')];
- if(parts[1]==='thumbs'){c.thumbs=c.thumbs||[null,null,null];c.thumbs[+parts[2]]=val===''?null:val}
+ if(parts[1]==='thumbs'){c.thumbs=c.thumbs||[];c.thumbs[+parts[2]]=val===''?null:val}
  else{if(val==='')delete c[parts[1]];else c[parts[1]]=val}
  DIRTY.add(parts[0]);
 }
