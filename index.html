@@ -456,14 +456,14 @@ const cfg=k=>CFG[k]||(CFG[k]={});
 const TAB_TOP=30,TAB_H=24,TAB_GAP=2;
 function catTabs(cats,active){return cats.map((c,k)=>`<div class="ctab${active&&c!==active?' ghost':''}" style="top:${TAB_TOP+k*(TAB_H+TAB_GAP)}mm;background:${cc(c)}"${active&&c!==active?' aria-hidden="true"':''}>${active&&c!==active?'':esc(c)}</div>`).join('')}
 async function renderPrint(){
- const showStaff=new URLSearchParams(location.search).get('staff')==='1';
+ const qs=new URLSearchParams(location.search),showStaff=qs.get('staff')==='1',showPN=qs.get('pn')==='1';
  $('#app').innerHTML='<div class="center">準備型錄中</div>';
  try{
   const [data,conf]=await Promise.all([get(showStaff?'staff=1':''),get('action=print').catch(()=>({cfg:{}}))]);
   DATA=data;
   const gals=await Promise.all(data.series.map(s=>get('action=gallery&series='+encodeURIComponent(s.id)).then(g=>g.images||[]).catch(()=>[])));
   CFG={};Object.entries(conf.cfg||{}).forEach(([k,v])=>{try{CFG[k]=JSON.parse(v)}catch(e){}});
-  PD={data,gals:Object.fromEntries(data.series.map((s,k)=>[s.id,gals[k]])),showStaff};
+  PD={data,gals:Object.fromEntries(data.series.map((s,k)=>[s.id,gals[k]])),showStaff,showPN};
  }catch(x){$('#app').innerHTML=`<div class="center">型錄無法載入：${esc(x.message)}</div>`;return}
  drawPrint();
 }
@@ -494,7 +494,7 @@ function seriesPage(s,pageNo,showStaff,cats){
  ${showThumbs?`<div class="sh-thumbs">${th.map((t,n)=>slot(key+'.thumbs.'+n,s.id,t,700)).join('')}</div>`:''}
  <div class="sh-body"><div data-edit="${key}.left" data-html="1">${c.left!==undefined?cleanHtml(c.left):defLeft}</div><div data-edit="${key}.right" data-html="1">${c.right!==undefined?cleanHtml(c.right):defRight}</div></div>
  <div class="sh-table"><div class="ptabs${split?' cols2':''}">${tables.map(t=>`<table class="ptab">${head}${t.join('')}</table>`).join('')}</div></div>
- <div class="sh-foot"><span>運費另計${showStaff?'｜員工價為售價 8 折，運費不打折':''}｜實際顏色以實品為準</span><span>官方 LINE ${LINE}｜${pageNo}</span></div></section>`;
+ <div class="sh-foot"><span>運費另計${showStaff?'｜員工價為售價 8 折，運費不打折':''}｜實際顏色以實品為準</span><span>官方 LINE ${LINE}${PD.showPN?'｜'+pageNo:''}</span></div></section>`;
 }
 function drawPrint(){
  const {data,showStaff}=PD;
@@ -509,9 +509,9 @@ function drawPrint(){
  const cover=`<section class="sheet cover" data-key="COVER">${EDIT?`<button class="resetpage" data-reset-page="COVER">還原此頁</button>`:''}${slot('COVER.img','',coverImg,2000,'cv-img')}
   <div class="cv-panel"><div><small>YUNGMEI LIVING 永美家居</small><h1 data-edit="COVER.title">${esc(C.title||'家具型錄')}</h1><p data-edit="COVER.sub">${esc(C.sub||'2026｜'+cats.join('・'))}</p>${showStaff?'<p style="color:var(--soft);font-size:9.5pt;margin-top:2mm">員工價版本</p>':''}</div>${qrBlock}</div></section>`;
  const toc=`<section class="sheet toc" data-key="TOC">${catTabs(cats)}<div class="sh-top"><b>YUNGMEI LIVING 永美家居</b><span>家具型錄</span></div><div class="sh-title"><h2>目錄</h2><span>右側色標對應分類</span></div>
-  ${cats.map(c=>{const list=data.series.filter(s=>s.cat===c);return `<div class="ci"><i style="background:${cc(c)}"></i><h3>${esc(c)}</h3><span>${list.map(s=>esc(s.name)).join('、')}</span><em>P.${first[c]}</em></div>`}).join('')}
+  ${cats.map(c=>{const list=data.series.filter(s=>s.cat===c);return `<div class="ci"><i style="background:${cc(c)}"></i><h3>${esc(c)}</h3>${PD.showPN?`<em style="margin-left:auto">P.${first[c]}</em>`:''}</div>`}).join('')}
   <div class="sh-info" style="margin-top:6mm"><div data-edit="TOC.html" data-html="1">${CFG.TOC&&CFG.TOC.html?cleanHtml(CFG.TOC.html):`<h3>關於預購</h3><p>本型錄家具皆為預購商品，到貨天數依各頁標示。實木與天然石材的紋理、色澤各有不同，屬正常現象。</p>`}</div></div>
-  <div style="flex:1"></div><div class="sh-foot"><span>商品資訊僅供參考，實際以商品標示為準</span><span>2</span></div></section>`;
+  <div style="flex:1"></div><div class="sh-foot"><span>商品資訊僅供參考，實際以商品標示為準</span><span>${PD.showPN?2:''}</span></div></section>`;
  const rule=data.floorRule||'item';
  const info=`<section class="sheet" data-key="INFO">${EDIT?`<button class="resetpage" data-reset-page="INFO">還原此頁</button>`:''}<div class="sh-top"><b>YUNGMEI LIVING 永美家居</b><span>家具型錄</span></div><div class="sh-info"><div data-edit="INFO.html" data-html="1">${CFG.INFO&&CFG.INFO.html?cleanHtml(CFG.INFO.html):`<div class="sh-title"><h2>訂購須知</h2></div>
   <h3>運費</h3><table class="ptab"><tr><th>級距</th><th>適用品項</th><th class="n">運費</th></tr><tr><td>小件</td><td>餐椅、燈飾、6,000 元以下餐桌等</td><td class="n">NT$160</td></tr><tr><td>大型家具</td><td>沙發、地毯、餐桌、邊櫃、茶几等</td><td class="n">NT$1,200</td></tr></table>
@@ -519,11 +519,11 @@ function drawPrint(){
   <h3>樓層費</h3><p>大型家具無電梯 2 樓起，每層加收 NT$${num(data.perFloor||250)}（${RULE_TEXT[rule]}），有電梯不另收。</p><p>小件以新竹物流寄送，送達一樓或管理室，無法搬運上樓。</p>
   ${showStaff?'<h3>員工價</h3><p>員工價為售價 8 折，運費與樓層費不打折。</p>':''}
   <h3>預購與到貨</h3><p>家具皆為預購商品，到貨天數依各商品標示。實木與天然石材的紋理、色澤各有不同，屬正常現象；商品顏色以實品為準。</p>`}</div>
-  <h3>訂購與詢問</h3><div style="display:flex;justify-content:space-between;align-items:flex-end;gap:8mm"><p>官方 LINE ${LINE}<br>永美室內裝修設計有限公司<br>新北市永和區自由街55號1樓<br>(02) 2923-0218</p>${qrBlock}</div></div><div style="flex:1"></div><div class="sh-foot"><span></span><span>${p}</span></div></section>`;
+  <h3>訂購與詢問</h3><div style="display:flex;justify-content:space-between;align-items:flex-end;gap:8mm"><p>官方 LINE ${LINE}<br>永美室內裝修設計有限公司<br>新北市永和區自由街55號1樓<br>(02) 2923-0218</p>${qrBlock}</div></div><div style="flex:1"></div><div class="sh-foot"><span></span><span>${PD.showPN?p:''}</span></div></section>`;
  const total=p;
  $('#app').innerHTML=`<div class="ptool"><b>型錄輸出</b><span class="sub" id="pst">共 ${total} 頁，圖片載入中</span>
   ${EDIT?`<span class="sub">點文字直接修改，點圖片換圖</span><input type="password" id="ppw" placeholder="後台密碼" value="${esc(pw)}" style="padding:6px;border:1px solid var(--line);width:120px"><button class="primary" id="psave">儲存修改${DIRTY.size?`（${DIRTY.size}）`:''}</button><button class="ghost" id="pdone">完成編輯</button>`
-  :`<button class="ghost" id="pedit">編輯內容與圖片</button><label><input type="checkbox" id="pstaff" ${showStaff?'checked':''}> 顯示員工價</label><label>分類 <select id="pcat"><option value="">全部</option>${cats.map(c=>`<option ${PD.only===c?'selected':''}>${esc(c)}</option>`).join('')}</select></label><button class="primary" id="pp">列印 / 存成 PDF</button>`}
+  :`<button class="ghost" id="pedit">編輯內容與圖片</button><label><input type="checkbox" id="pstaff" ${showStaff?'checked':''}> 顯示員工價</label><label><input type="checkbox" id="ppn" ${PD.showPN?'checked':''}> 顯示頁碼</label><label>分類 <select id="pcat"><option value="">全部</option>${cats.map(c=>`<option ${PD.only===c?'selected':''}>${esc(c)}</option>`).join('')}</select></label><button class="primary" id="pp">列印 / 存成 PDF</button>`}
   <a href="?view=admin">回後台</a><span class="err" id="perr" hidden></span></div>
   <div class="sheets${EDIT?' editing':''}">${PD.only?'':cover+toc}${PD.only?pages.filter((x,k)=>data.series[k].cat===PD.only).join(''):pages.join('')}${PD.only?'':info}</div>`;
  fitAll();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitAll);
@@ -531,7 +531,8 @@ function drawPrint(){
  const imgs=[...document.querySelectorAll('.sheet img')];let done=0;imgs.forEach(i=>i.addEventListener('error',()=>{i.style.visibility='hidden'}));const tick=()=>{done++;if(done>=imgs.length)$('#pst').textContent=`共 ${document.querySelectorAll('.sheet').length} 頁，${EDIT?'編輯中':'可以列印了'}`};
  imgs.forEach(i=>{if(i.complete)tick();else{i.addEventListener('load',tick);i.addEventListener('error',tick)}});if(!imgs.length)tick();
  if(!EDIT){
-  $('#pstaff').onchange=e=>{location.search='?view=print'+(e.target.checked?'&staff=1':'')};
+  const goPrint=()=>{location.search='?view=print'+($('#pstaff').checked?'&staff=1':'')+($('#ppn').checked?'&pn=1':'')};
+  $('#pstaff').onchange=goPrint;$('#ppn').onchange=goPrint;
   $('#pcat').onchange=e=>{PD.only=e.target.value;drawPrint()};
   $('#pp').onclick=()=>window.print();
   $('#pedit').onclick=()=>{EDIT=true;drawPrint()};
@@ -573,8 +574,8 @@ function fitPage(sh){
 }
 function fitAll(){
  const bad=[];
- document.querySelectorAll('.sheet').forEach(s=>{if(fitPage(s)<0)bad.push(s.querySelector('.sh-foot span:last-child')?.textContent.split('｜').pop()||'?')});
- const st=$('#pst');if(st&&bad.length)st.textContent=`第 ${bad.join('、')} 頁內容太多，請刪減文字`;
+ document.querySelectorAll('.sheet').forEach(s=>{if(fitPage(s)<0)bad.push('「'+(s.querySelector('.sh-title h2')?.textContent||'?')+'」')});
+ const st=$('#pst');if(st&&bad.length)st.textContent=`${bad.join('、')} 這幾頁內容太多，請刪減文字`;
 }
 function fitSheets(){
  const box=document.querySelector('.sheets'),sh=box&&box.querySelector('.sheet');if(!sh)return;
