@@ -225,7 +225,7 @@ const skuMap=()=>Object.fromEntries(DATA.series.flatMap(s=>s.items.map(i=>[i.sku
 const preOf=s=>{const p=[...new Set(s.items.map(i=>i.pre).filter(Boolean))];return p.length===1?p[0]:p.length?'依款式而定':''};
 const coverOf=s=>s.cover||(s.items.find(i=>i.img)||{}).img||'';
 /* 照片順序：後台拖曳排序的結果優先，新上傳但還沒排序的照片接在後面 */
-function ordered(s,gal){const base=[...new Set([...(gal||[]),...s.items.map(i=>i.img)].filter(Boolean))];const o=(s.order||(s.cover?[s.cover]:[])).filter(x=>base.includes(x));return [...o,...base.filter(x=>!o.includes(x))]}
+function ordered(s,gal){const base=[...new Set([...(gal||[]),...s.items.map(i=>i.img)].filter(Boolean))];const o=(s.order||(s.cover?[s.cover]:[])).filter(x=>!gal||base.includes(x));return [...o,...base.filter(x=>!o.includes(x))]}
 
 /* 運費：同一張訂單取最高級距；樓層費無電梯 2 樓起每層 +200 */
 const RULE_TEXT={order:'每張訂單計一次',large:'僅含大型家具的訂單收取',item:'大型家具依件數計算'};
@@ -267,9 +267,9 @@ function card(s){
 
 async function openSeries(id){
  const s=DATA.series.find(x=>x.id===id);
- sel={s,sku:s.items[0].sku,gallery:[],photo:null,qty:1};
+ sel={s,sku:s.items[0].sku,gallery:null,photo:coverOf(s)||null,qty:1};
  renderDetail();dlg.showModal();
- try{const g=await get('action=gallery&series='+encodeURIComponent(id));if(sel&&sel.s.id===id){sel.gallery=g.images||[];renderDetail()}}catch(e){}
+ try{const g=await get('action=gallery&series='+encodeURIComponent(id));if(sel&&sel.s.id===id&&dlg.open&&$('.viewer',dlg)){sel.gallery=g.images||[];renderDetail()}}catch(e){if(sel)sel.gallery=[]}
 }
 function specList(s,it){
  const l=[];if(s.mat)l.push(['材質',s.mat]);if(s.size)l.push(['尺寸',s.size]);
@@ -277,7 +277,7 @@ function specList(s,it){
  if(it&&it.pre)l.push(['預購',it.pre]);else{const p=preOf(s);if(p)l.push(['預購',p])}
  return l;
 }
-/* 商品照片輪播：每 4 秒自動換下一張；滑鼠移到照片上或剛手動切換時暫停，左右鍵、箭頭、滑動、點縮圖都能切換 */
+/* 商品照片輪播：每 1.5 秒自動換下一張，打開時從首圖開始；手動切換後暫停 8 秒，左右鍵、箭頭、滑動、點縮圖都能切換 */
 let CAR=null;
 function stopCarousel(){if(CAR){clearInterval(CAR.t);clearTimeout(CAR.r);document.removeEventListener('keydown',CAR.key);CAR=null}}
 function startCarousel(list,main){
@@ -288,9 +288,11 @@ function startCarousel(list,main){
  const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
  const show=k=>{if(!pic.isConnected){stopCarousel();return}if(!list.length)return;i=(k+list.length)%list.length;sel.photo=list[i];
   pic.classList.add('fade');setTimeout(()=>{pic.src=img(list[i],1200);pic.classList.remove('fade')},120);
-  if(cnt)cnt.textContent=`${i+1} / ${list.length}`;
+  if(cnt)cnt.textContent=`${i+1} / ${list.length}`;pre(i+1);
   if(tb){tb.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-current',b.dataset.t===list[i]));const cur=tb.querySelector('[aria-current="true"]');if(cur)tb.scrollTo({left:cur.offsetLeft-tb.clientWidth/2+cur.clientWidth/2,behavior:'smooth'})}};
- const play=()=>{if(reduce||list.length<2||!CAR)return;clearInterval(CAR.t);CAR.t=setInterval(()=>show(i+1),4000)};
+ const play=()=>{if(reduce||list.length<2||!CAR)return;clearInterval(CAR.t);CAR.t=setInterval(()=>show(i+1),1500)};
+ const pre=k=>{const u=list[(k+list.length)%list.length];if(u){const im=new Image();im.referrerPolicy='no-referrer';im.src=img(u,1200)}};
+ pre(i+1);
  const pause=()=>{if(CAR)clearInterval(CAR.t)};
  const manual=k=>{show(k);pause();clearTimeout(CAR.r);CAR.r=setTimeout(play,8000)};
  CAR={t:0,r:0,key:e=>{if(!dlg.open||!$('.viewer',dlg))return;if(e.key==='ArrowLeft')manual(i-1);else if(e.key==='ArrowRight')manual(i+1)}};
@@ -300,13 +302,12 @@ function startCarousel(list,main){
  let x0=null;
  v.addEventListener('pointerdown',e=>{if(e.target.closest('.nav'))return;x0=e.clientX});
  v.addEventListener('pointerup',e=>{if(x0===null)return;const dx=e.clientX-x0;x0=null;if(Math.abs(dx)>40)manual(dx<0?i+1:i-1)});
- v.addEventListener('mouseenter',pause);v.addEventListener('mouseleave',()=>{clearTimeout(CAR&&CAR.r);play()});
  play();
 }
 dlg.addEventListener('close',stopCarousel);
 function renderDetail(){
  const s=sel.s,it=s.items.find(i=>i.sku===sel.sku);
- const main=sel.photo||it.img||sel.gallery[0]||coverOf(s);
+ const main=sel.photo||it.img||(sel.gallery||[])[0]||coverOf(s);
  const thumbs=ordered(s,sel.gallery);if(main&&!thumbs.includes(main))thumbs.unshift(main);
  const many=thumbs.length>1;
  dlg.innerHTML=`<div class="detail"><div class="stage"><div class="viewer"><img class="main" draggable="false" referrerpolicy="no-referrer" src="${img(main,1200)}" alt="${esc(s.name)}">${many?`<button type="button" class="nav prev" aria-label="上一張">‹</button><button type="button" class="nav next" aria-label="下一張">›</button><span class="count">${thumbs.indexOf(main)+1} / ${thumbs.length}</span>`:''}</div>
