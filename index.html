@@ -277,7 +277,7 @@ function specList(s,it){
  if(it&&it.pre)l.push(['預購',it.pre]);else{const p=preOf(s);if(p)l.push(['預購',p])}
  return l;
 }
-/* 商品照片輪播：每 1.5 秒自動換下一張，打開時從首圖開始；手動切換後暫停 8 秒，左右鍵、箭頭、滑動、點縮圖都能切換 */
+/* 商品照片輪播：每 2 秒自動換下一張，打開時從首圖開始；手動切換後暫停 8 秒，左右鍵、箭頭、滑動、點縮圖都能切換 */
 let CAR=null;
 function stopCarousel(){if(CAR){clearInterval(CAR.t);clearTimeout(CAR.r);document.removeEventListener('keydown',CAR.key);CAR=null}}
 function startCarousel(list,main){
@@ -290,7 +290,7 @@ function startCarousel(list,main){
   pic.classList.add('fade');setTimeout(()=>{pic.src=img(list[i],1200);pic.classList.remove('fade')},120);
   if(cnt)cnt.textContent=`${i+1} / ${list.length}`;pre(i+1);
   if(tb){tb.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-current',b.dataset.t===list[i]));const cur=tb.querySelector('[aria-current="true"]');if(cur)tb.scrollTo({left:cur.offsetLeft-tb.clientWidth/2+cur.clientWidth/2,behavior:'smooth'})}};
- const play=()=>{if(reduce||list.length<2||!CAR)return;clearInterval(CAR.t);CAR.t=setInterval(()=>show(i+1),1500)};
+ const play=()=>{if(reduce||list.length<2||!CAR)return;clearInterval(CAR.t);CAR.t=setInterval(()=>show(i+1),2000)};
  const pre=k=>{const u=list[(k+list.length)%list.length];if(u){const im=new Image();im.referrerPolicy='no-referrer';im.src=img(u,1200)}};
  pre(i+1);
  const pause=()=>{if(CAR)clearInterval(CAR.t)};
