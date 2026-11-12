@@ -79,6 +79,7 @@ legend{padding:0;font-size:14px;color:var(--soft);margin-bottom:6px}
 .cart h2{font-size:26px;color:var(--head);margin-bottom:12px}
 .row{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding:10px 0;border-bottom:1px solid var(--line)}
 .row small{color:var(--soft)}
+.row.ci{grid-template-columns:64px 1fr auto;align-items:center}.row.ci .thumb{grid-row:span 2;width:64px;height:64px;object-fit:cover;border-radius:6px;background:var(--line)}
 .linkbtn{background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;font-size:14px}
 label.f{display:block;margin-top:12px;font-size:14px;color:var(--soft)}
 label.f input,label.f textarea,label.f select{display:block;width:100%;margin-top:3px;border:1px solid var(--line);background:#fff;padding:9px;color:var(--ink);font-size:16px}
@@ -337,7 +338,7 @@ function openCart(){
  const lines=cart.map(c=>({ship:m[c.sku].ship,qty:c.qty}));
  const fe=fees(lines,v.floor,v.elevator);
  dlg.innerHTML=`<div class="cart"><button class="x" aria-label="關閉" data-close>×</button><h2>訂購清單</h2>
- ${cart.length?cart.map(c=>`<div class="row"><div>${esc(m[c.sku].series.name)}<br><small>${esc(m[c.sku].label)}｜${esc(c.sku)}${m[c.sku].pre?'｜預購'+esc(m[c.sku].pre):''}</small></div><div>${money(m[c.sku].staff*c.qty)}</div>
+ ${cart.length?cart.map(c=>`<div class="row ci"><img class="thumb" loading="lazy" referrerpolicy="no-referrer" src="${img(m[c.sku].img||coverOf(m[c.sku].series),160)}" alt=""><div>${esc(m[c.sku].series.name)}<br><small>${esc(m[c.sku].label)}｜${esc(c.sku)}${m[c.sku].pre?'｜預購'+esc(m[c.sku].pre):''}</small></div><div>${money(m[c.sku].staff*c.qty)}</div>
  <div><label>數量 <input type="number" min="1" max="99" value="${c.qty}" data-q="${esc(c.sku)}" style="width:64px;padding:4px"></label></div><div><button class="linkbtn" data-rm="${esc(c.sku)}">移除</button></div></div>`).join(''):'<p class="sub">清單是空的，先回型錄挑選款式。</p>'}
  ${cart.length?`<form id="of"><label class="f">姓名<input name="name" required maxlength="30" value="${esc(v.name)}" autocomplete="name"></label>
  <div class="two"><label class="f">電話<input name="phone" required maxlength="20" inputmode="tel" value="${esc(v.phone)}" autocomplete="tel"></label>
