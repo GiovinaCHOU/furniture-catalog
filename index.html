@@ -237,7 +237,7 @@ function fees(lines,floor,elevator,rule=DATA&&DATA.floorRule||'item',per=DATA&&D
  if(elevator==='無'&&f>=2){const p=(f-1)*per;ff=rule==='item'?p*q:rule==='large'?(ship>=1200?p:0):p}
  return {ship,floorFee:ff};
 }
-function shipInfo(){const r=DATA.floorRule||'item';return `<div><h3>運費</h3><ul><li>小件 NT$160：餐椅、燈飾、小型餐桌等</li><li>大型家具 NT$1,200：沙發、地毯、餐桌、邊櫃、茶几等</li><li>同一張訂單只收一次，有大型家具時以 NT$1,200 計</li></ul></div>
+function shipInfo(){const r=DATA.floorRule||'item';return `<div><h3>運費</h3><ul><li>小件 NT$160：餐椅、燈飾、小型餐桌等</li><li>大型家具 NT$1,200：沙發、餐桌、邊櫃、茶几等</li><li>同一張訂單只收一次，有大型家具時以 NT$1,200 計</li></ul></div>
 <div><h3>樓層費</h3><ul><li>大型家具無電梯 2 樓起，每層加收 NT$${num(DATA.perFloor||250)}（${RULE_TEXT[r]}）</li><li>有電梯不另收</li><li>小件以新竹物流寄送，送達一樓或管理室，無法搬運上樓</li></ul></div>`}
 function infoBlock(){return `<section class="info"><h2>訂購須知</h2><div class="cols">
 <div><h3>預購</h3><ul><li>商品皆為預購，到貨天數依各商品標示</li><li>實木與天然石材的紋理、色澤各有不同，屬正常現象</li></ul></div>
@@ -551,7 +551,7 @@ function drawPrint(){
   <div style="flex:1"></div><div class="sh-foot"><span>商品資訊僅供參考，實際以商品標示為準</span><span>${PD.showPN?2:''}</span></div></section>`;
  const rule=data.floorRule||'item';
  const info=`<section class="sheet" data-key="INFO">${EDIT?`<button class="resetpage" data-reset-page="INFO">還原此頁</button>`:''}<div class="sh-top"><b>YUNGMEI LIVING 永美家居</b><span>家具型錄</span></div><div class="sh-info"><div data-edit="INFO.html" data-html="1">${CFG.INFO&&CFG.INFO.html?cleanHtml(CFG.INFO.html):`<div class="sh-title"><h2>訂購須知</h2></div>
-  <h3>運費</h3><table class="ptab"><tr><th>級距</th><th>適用品項</th><th class="n">運費</th></tr><tr><td>小件</td><td>餐椅、燈飾、小型餐桌等</td><td class="n">NT$160</td></tr><tr><td>大型家具</td><td>沙發、地毯、餐桌、邊櫃、茶几等</td><td class="n">NT$1,200</td></tr></table>
+  <h3>運費</h3><table class="ptab"><tr><th>級距</th><th>適用品項</th><th class="n">運費</th></tr><tr><td>小件</td><td>餐椅、燈飾、小型餐桌等</td><td class="n">NT$160</td></tr><tr><td>大型家具</td><td>沙發、餐桌、邊櫃、茶几等</td><td class="n">NT$1,200</td></tr></table>
   <p style="margin-top:2mm">同一張訂單只收一次運費，有大型家具時以 NT$1,200 計。</p>
   <h3>樓層費</h3><p>大型家具無電梯 2 樓起，每層加收 NT$${num(data.perFloor||250)}（${RULE_TEXT[rule]}），有電梯不另收。</p><p>小件以新竹物流寄送，送達一樓或管理室，無法搬運上樓。</p>
   ${showStaff?'<h3>員工價</h3><p>員工價為售價 8 折，運費與樓層費不適用員工折扣。</p>':''}
