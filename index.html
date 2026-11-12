@@ -241,7 +241,7 @@ function shipInfo(){const r=DATA.floorRule||'item';return `<div><h3>運費</h3><
 <div><h3>樓層費</h3><ul><li>大型家具無電梯 2 樓起，每層加收 NT$${num(DATA.perFloor||250)}（${RULE_TEXT[r]}）</li><li>有電梯不另收</li><li>小件以新竹物流寄送，送達一樓或管理室，無法搬運上樓</li></ul></div>`}
 function infoBlock(){return `<section class="info"><h2>訂購須知</h2><div class="cols">
 <div><h3>預購</h3><ul><li>商品皆為預購，到貨天數依各商品標示</li><li>實木與天然石材的紋理、色澤各有不同，屬正常現象</li></ul></div>
-${shipInfo()}${STAFF?'<div><h3>員工價</h3><ul><li>員工價為售價 8 折</li><li>運費與樓層費以原價計算不打折</li></ul></div>':''}
+${shipInfo()}${STAFF?'<div><h3>員工價</h3><ul><li>員工價為售價 8 折</li><li>運費與樓層費不適用員工折扣</li></ul></div>':''}
 <div><h3>聯絡我們</h3><ul><li>官方 LINE ${LINE}</li><li>(02) 2923-0218</li><li>新北市永和區自由街55號1樓</li></ul></div>
 </div></section>`}
 
@@ -554,7 +554,7 @@ function drawPrint(){
   <h3>運費</h3><table class="ptab"><tr><th>級距</th><th>適用品項</th><th class="n">運費</th></tr><tr><td>小件</td><td>餐椅、燈飾、6,000 元以下餐桌等</td><td class="n">NT$160</td></tr><tr><td>大型家具</td><td>沙發、地毯、餐桌、邊櫃、茶几等</td><td class="n">NT$1,200</td></tr></table>
   <p style="margin-top:2mm">同一張訂單只收一次運費，有大型家具時以 NT$1,200 計。</p>
   <h3>樓層費</h3><p>大型家具無電梯 2 樓起，每層加收 NT$${num(data.perFloor||250)}（${RULE_TEXT[rule]}），有電梯不另收。</p><p>小件以新竹物流寄送，送達一樓或管理室，無法搬運上樓。</p>
-  ${showStaff?'<h3>員工價</h3><p>員工價為售價 8 折，運費與樓層費以原價計算不打折。</p>':''}
+  ${showStaff?'<h3>員工價</h3><p>員工價為售價 8 折，運費與樓層費不適用員工折扣。</p>':''}
   <h3>預購與到貨</h3><p>商品皆為預購，到貨天數依各商品標示。實木與天然石材的紋理、色澤各有不同，屬正常現象；商品顏色以實品為準。</p>`}</div>
   <h3>訂購與詢問</h3><div style="display:flex;justify-content:space-between;align-items:flex-end;gap:8mm"><p>官方 LINE ${LINE}<br>永美室內裝修設計有限公司<br>新北市永和區自由街55號1樓<br>(02) 2923-0218</p>${qrBlock}</div></div><div style="flex:1"></div><div class="sh-foot"><span></span><span>${PD.showPN?p:''}</span></div></section>`;
  const total=p;
