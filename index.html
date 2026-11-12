@@ -414,9 +414,10 @@ function renderAdmin(){
  <label class="f">備註<input name="note"></label><label class="f">付款方式<select name="method"><option></option><option>現金</option><option>匯款</option></select></label>
  <div class="sum" id="aq" hidden></div><p class="err" id="ae" hidden></p><div class="bar"><button type="button" class="ghost" id="aqb">試算金額</button><button class="primary">建立訂單</button></div></form>
  <p class="sub">客戶訂單以售價計算，員工訂單以員工價計算。後台可訂購未上架的品編，共 ${AD.skus.length} 個品編。</p>`;
- if(tab==='dl')body=CAT?`<p class="sub">勾選要下載的商品，照片會依「首圖設定」的順序轉成 JPG，打包成一個 ZIP。依分類分資料夾，另附「品編」資料夾，以品編命名各款式的主圖，方便上架。</p>
+ if(tab==='dl')body=CAT?`<p class="sub">勾選要下載的商品，雲端資料夾裡的照片會依「首圖設定」的順序轉成 JPG，打包成一個 ZIP，依分類分資料夾。</p>
  <div class="bar"><button class="ghost" id="dlall">全選</button><button class="ghost" id="dlnone">全不選</button>
  <label>尺寸 <select id="dlsize"><option value="0">原始尺寸</option><option value="1200">長邊 1200 px</option><option value="800">長邊 800 px</option></select></label>
+ <label><input type="checkbox" id="dlext"> 也下載試算表「圖片網址」欄的快豹圖片（含品編資料夾）</label>
  <button class="primary" id="dlgo">下載 JPG（ZIP）</button><span class="sub" id="dlst"></span></div>
  ${[...new Set(CAT.series.map(s=>s.cat||'其他'))].map(c=>`<h3 style="margin:18px 0 6px">${esc(c)} <button class="linkbtn" data-dlcat="${esc(c)}">勾選此分類</button></h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px">${CAT.series.filter(s=>(s.cat||'其他')===c).map(s=>`<label class="payopt" style="margin:0"><input type="checkbox" data-dl="${esc(s.id)}" data-cat="${esc(c)}" checked><span>${esc(s.name)}<small>${esc(s.id)}</small></span></label>`).join('')}</div>`).join('')}`:'<p class="sub">載入型錄中</p>';
  if(tab==='cover')body=CAT?`<p class="sub">點系列展開後，拖曳照片調整順序，第一張就是型錄首圖；點兩下照片可以直接移到第一張。順序會用在商品頁的照片和紙本型錄的縮圖。手機可用照片下方的 ◀ ▶ 移動。照片來源是試算表的圖片網址，以及「圖片資料夾」欄的雲端資料夾。</p><div class="covers">${CAT.series.map(s=>`<details class="cv" data-cv="${esc(s.id)}"><summary><img referrerpolicy="no-referrer" src="${img(coverOf(s),160)}" alt=""><span><span class="dot" style="background:${cc(s.cat)}"></span> ${esc(s.id)} ${esc(s.name)}<br><small class="sub">${s.order?'已自訂順序':s.cover?'已自訂首圖':'預設順序'}</small></span></summary><div class="pick" data-pick="${esc(s.id)}"><span class="sub">載入照片中</span></div><button class="linkbtn" data-reset="${esc(s.id)}" style="margin-top:8px">改回預設順序</button></details>`).join('')}</div>`:'<p class="sub">載入型錄中</p>';
@@ -431,7 +432,7 @@ function renderAdmin(){
   $('#dlall').onclick=()=>document.querySelectorAll('[data-dl]').forEach(c=>c.checked=true);
   $('#dlnone').onclick=()=>document.querySelectorAll('[data-dl]').forEach(c=>c.checked=false);
   document.querySelectorAll('[data-dlcat]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-dl]').forEach(c=>c.checked=c.dataset.cat===b.dataset.dlcat)});
-  dg.onclick=()=>downloadJpgs([...document.querySelectorAll('[data-dl]:checked')].map(c=>c.dataset.dl),+$('#dlsize').value);
+  dg.onclick=()=>downloadJpgs([...document.querySelectorAll('[data-dl]:checked')].map(c=>c.dataset.dl),+$('#dlsize').value,$('#dlext').checked);
  }
  $('#app').querySelectorAll('[data-cv]').forEach(d=>d.ontoggle=()=>{if(d.open)loadPick(d.dataset.cv)});
  $('#app').querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
@@ -496,7 +497,7 @@ function blobToJpg(src,size,revoke){return new Promise((ok,bad)=>{const im=new I
   const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);if(revoke)URL.revokeObjectURL(src);
   c.toBlob(b=>b?ok(b):bad(new Error('轉檔失敗')),'image/jpeg',0.92)};
  im.onerror=()=>bad(new Error('圖片無法讀取'));im.src=src})}
-async function downloadJpgs(ids,size){
+async function downloadJpgs(ids,size,withExt){
  const st=$('#dlst'),btn=$('#dlgo');if(!ids.length){st.textContent='請至少勾選一個商品';return}
  if(typeof JSZip==='undefined'){st.textContent='壓縮元件載入失敗，請重新整理頁面';return}
  btn.disabled=true;const zip=new JSZip();let n=0;const fail=[];const done={};
@@ -507,8 +508,8 @@ async function downloadJpgs(ids,size){
   st.textContent=`讀取照片清單 ${sid}`;
   if(!GAL[sid]){try{GAL[sid]=(await get('action=gallery&series='+encodeURIComponent(sid))).images||[]}catch(e){GAL[sid]=[]}}
   const folder=`${safe(s.cat||'其他')}/${safe(s.id+'_'+s.name)}`;
-  ordered(s,GAL[sid]).forEach((p,k)=>jobs.push({src:p,path:`${folder}/${safe(s.id)}_${String(k+1).padStart(2,'0')}.jpg`,label:`${s.name} 第 ${k+1} 張`}));
-  s.items.forEach(it=>{if(it.img)jobs.push({src:it.img,path:`品編/${safe(it.sku)}.jpg`,label:it.sku})});
+  ordered(s,GAL[sid]).filter(p=>withExt||!/^https?:/.test(p)).forEach((p,k)=>jobs.push({src:p,path:`${folder}/${safe(s.id)}_${String(k+1).padStart(2,'0')}.jpg`,label:`${s.name} 第 ${k+1} 張`}));
+  if(withExt)s.items.forEach(it=>{if(it.img)jobs.push({src:it.img,path:`品編/${safe(it.sku)}.jpg`,label:it.sku})});
  }
  const ext=[...new Set(jobs.map(j=>j.src).filter(x=>/^https?:/.test(x)))];
  for(let i=0;i<ext.length;i+=4){
