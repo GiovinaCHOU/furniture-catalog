@@ -514,7 +514,7 @@ async function downloadJpgs(ids,size){
  for(let i=0;i<ext.length;i+=4){
   st.textContent=`下載外站圖片 ${Math.min(i+4,ext.length)}/${ext.length}`;
   try{const r=await post({action:'admin_img',password:pw,urls:ext.slice(i,i+4)});
-   for(const g of r.images||[]){if(g.data){const bin=atob(g.data);const u8=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)u8[k]=bin.charCodeAt(k);done[g.url]=URL.createObjectURL(new Blob([u8],{type:g.type||'image/jpeg'}))}}
+   for(const g of r.images||[]){if(g.error&&!window.__imgErr)window.__imgErr=g.error;if(g.data){const bin=atob(g.data);const u8=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)u8[k]=bin.charCodeAt(k);done[g.url]=URL.createObjectURL(new Blob([u8],{type:g.type||'image/jpeg'}))}}
   }catch(e){st.textContent=e.message;btn.disabled=false;return}
  }
  const conv={};
@@ -528,7 +528,7 @@ async function downloadJpgs(ids,size){
  st.textContent='壓縮中';
  const blob=await zip.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);
  const d=new Date();a.download=`家具圖片_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.zip`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
- st.textContent=`完成，共 ${n} 張${fail.length?`；${fail.length} 張無法下載：${fail.slice(0,5).join('、')}${fail.length>5?'…':''}`:''}`;btn.disabled=false;
+ st.textContent=`完成，共 ${n} 張${fail.length?`；${fail.length} 張無法下載：${fail.slice(0,5).join('、')}${fail.length>5?'…':''}`:''}${window.__imgErr?`（原因：${window.__imgErr}）`:''}`;window.__imgErr=null;btn.disabled=false;
 }
 function alertErr(m){const p=document.createElement('p');p.className='err';p.textContent=m;$('#app .wrap').prepend(p)}
 
