@@ -192,6 +192,7 @@ td input{width:76px;text-align:right}
 <div id="app"><div class="center">載入型錄中</div></div>
 <dialog id="dlg"></dialog>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycbw-GcR1WCM4So6xacTMr-gOxJtYHtZQtR29eHjdJ7F6lmmCF1n_9CKlu2TpIPdOEoKrzg/exec';
 const LINE='@473dadky';
@@ -393,7 +394,7 @@ function csv(name,rows){
  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();URL.revokeObjectURL(a.href);
 }
 function renderAdmin(){
- const T={orders:'訂單明細',summary:'叫貨彙總',add:'代客下單',cover:'首圖設定',set:'設定'};
+ const T={orders:'訂單明細',summary:'叫貨彙總',add:'代客下單',cover:'首圖設定',dl:'圖片下載',set:'設定'};
  const tot=AD.summary.reduce((a,r)=>({q:a.q+r.qty,c:a.c+r.qty*r.cost}),{q:0,c:0});
  const fee=AD.orders.reduce((a,o)=>({s:a.s+o.ship,f:a.f+o.floorFee}),{s:0,f:0});
  let body='';
@@ -413,6 +414,11 @@ function renderAdmin(){
  <label class="f">備註<input name="note"></label><label class="f">付款方式<select name="method"><option></option><option>現金</option><option>匯款</option></select></label>
  <div class="sum" id="aq" hidden></div><p class="err" id="ae" hidden></p><div class="bar"><button type="button" class="ghost" id="aqb">試算金額</button><button class="primary">建立訂單</button></div></form>
  <p class="sub">客戶訂單以售價計算，員工訂單以員工價計算。後台可訂購未上架的品編，共 ${AD.skus.length} 個品編。</p>`;
+ if(tab==='dl')body=CAT?`<p class="sub">勾選要下載的商品，照片會依「首圖設定」的順序轉成 JPG，打包成一個 ZIP。依分類分資料夾，另附「品編」資料夾，以品編命名各款式的主圖，方便上架。</p>
+ <div class="bar"><button class="ghost" id="dlall">全選</button><button class="ghost" id="dlnone">全不選</button>
+ <label>尺寸 <select id="dlsize"><option value="0">原始尺寸</option><option value="1200">長邊 1200 px</option><option value="800">長邊 800 px</option></select></label>
+ <button class="primary" id="dlgo">下載 JPG（ZIP）</button><span class="sub" id="dlst"></span></div>
+ ${[...new Set(CAT.series.map(s=>s.cat||'其他'))].map(c=>`<h3 style="margin:18px 0 6px">${esc(c)} <button class="linkbtn" data-dlcat="${esc(c)}">勾選此分類</button></h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px">${CAT.series.filter(s=>(s.cat||'其他')===c).map(s=>`<label class="payopt" style="margin:0"><input type="checkbox" data-dl="${esc(s.id)}" data-cat="${esc(c)}" checked><span>${esc(s.name)}<small>${esc(s.id)}</small></span></label>`).join('')}</div>`).join('')}`:'<p class="sub">載入型錄中</p>';
  if(tab==='cover')body=CAT?`<p class="sub">點系列展開後，拖曳照片調整順序，第一張就是型錄首圖；點兩下照片可以直接移到第一張。順序會用在商品頁的照片和紙本型錄的縮圖。手機可用照片下方的 ◀ ▶ 移動。照片來源是試算表的圖片網址，以及「圖片資料夾」欄的雲端資料夾。</p><div class="covers">${CAT.series.map(s=>`<details class="cv" data-cv="${esc(s.id)}"><summary><img referrerpolicy="no-referrer" src="${img(coverOf(s),160)}" alt=""><span><span class="dot" style="background:${cc(s.cat)}"></span> ${esc(s.id)} ${esc(s.name)}<br><small class="sub">${s.order?'已自訂順序':s.cover?'已自訂首圖':'預設順序'}</small></span></summary><div class="pick" data-pick="${esc(s.id)}"><span class="sub">載入照片中</span></div><button class="linkbtn" data-reset="${esc(s.id)}" style="margin-top:8px">改回預設順序</button></details>`).join('')}</div>`:'<p class="sub">載入型錄中</p>';
  if(tab==='set')body=`<h3 style="margin-top:8px">樓層費計算方式</h3><p class="sub">無電梯 2 樓起，每層 NT$250。小件以新竹物流寄到一樓或管理室，不收樓層費。廠商規則有變時在這裡切換，網站與新訂單會一起更新。</p>
  <div class="opts">${Object.entries(RULE_TEXT).map(([k,t])=>`<button class="opt" aria-pressed="${AD.floorRule===k}" data-rule="${k}">${t}</button>`).join('')}</div>
@@ -420,7 +426,13 @@ function renderAdmin(){
  $('#app').innerHTML=`<div class="wrap"><header class="top"><h1 style="font-size:36px">家具型錄後台</h1><p><a href="?view=staff">員工下單頁</a>｜<a href="./">客戶型錄頁</a>｜<a href="?view=print">型錄輸出</a></p></header>
  <div class="bar"><span>員工下單：${AD.open?'開放中':'已暫停'}</span><button class="ghost" id="tg">${AD.closed?'重新開放':'暫停下單'}</button><button class="ghost" id="rf">重新整理</button></div>
  <div class="tabs">${Object.keys(T).map(k=>`<button class="pill" aria-pressed="${k===tab}" data-tab="${k}">${T[k]}</button>`).join('')}</div>${body}</div>`;
- $('#app').querySelectorAll('[data-tab]').forEach(b=>b.onclick=async()=>{tab=b.dataset.tab;renderAdmin();if(tab==='cover'&&!CAT){try{CAT=await get('');}catch(x){alertErr(x.message)}renderAdmin()}});
+ $('#app').querySelectorAll('[data-tab]').forEach(b=>b.onclick=async()=>{tab=b.dataset.tab;renderAdmin();if((tab==='cover'||tab==='dl')&&!CAT){try{CAT=await get('');}catch(x){alertErr(x.message)}renderAdmin()}});
+ const dg=$('#dlgo');if(dg){
+  $('#dlall').onclick=()=>document.querySelectorAll('[data-dl]').forEach(c=>c.checked=true);
+  $('#dlnone').onclick=()=>document.querySelectorAll('[data-dl]').forEach(c=>c.checked=false);
+  document.querySelectorAll('[data-dlcat]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-dl]').forEach(c=>c.checked=c.dataset.cat===b.dataset.dlcat)});
+  dg.onclick=()=>downloadJpgs([...document.querySelectorAll('[data-dl]:checked')].map(c=>c.dataset.dl),+$('#dlsize').value);
+ }
  $('#app').querySelectorAll('[data-cv]').forEach(d=>d.ontoggle=()=>{if(d.open)loadPick(d.dataset.cv)});
  $('#app').querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{
   if(b.dataset.confirm!=='1'){b.dataset.confirm='1';b.textContent='確定刪除？';b.style.color='var(--err)';setTimeout(()=>{if(b.isConnected&&b.dataset.confirm==='1'){b.dataset.confirm='';b.textContent='刪除';b.style.color=''}},4000);return}
@@ -478,6 +490,45 @@ async function loadPick(id){
 async function saveOrder(id,order){
  try{await post({action:'admin_imgorder',password:pw,series:id,order});const s=CAT.series.find(x=>x.id===id);if(order.length){s.order=order;s.cover=order[0]}else{delete s.order;delete s.cover}renderAdmin();const d=$(`[data-cv="${id}"]`);if(d){d.open=true;loadPick(id)}}
  catch(x){alertErr(x.message)}
+}
+function blobToJpg(src,size,revoke){return new Promise((ok,bad)=>{const im=new Image();if(!revoke){im.crossOrigin='anonymous';im.referrerPolicy='no-referrer'}
+ im.onload=()=>{let w=im.naturalWidth,h=im.naturalHeight;if(size&&Math.max(w,h)>size){const r=size/Math.max(w,h);w=Math.round(w*r);h=Math.round(h*r)}
+  const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);if(revoke)URL.revokeObjectURL(src);
+  c.toBlob(b=>b?ok(b):bad(new Error('轉檔失敗')),'image/jpeg',0.92)};
+ im.onerror=()=>bad(new Error('圖片無法讀取'));im.src=src})}
+async function downloadJpgs(ids,size){
+ const st=$('#dlst'),btn=$('#dlgo');if(!ids.length){st.textContent='請至少勾選一個商品';return}
+ if(typeof JSZip==='undefined'){st.textContent='壓縮元件載入失敗，請重新整理頁面';return}
+ btn.disabled=true;const zip=new JSZip();let n=0;const fail=[];const done={};
+ const safe=s=>String(s).replace(/[\\/:*?"<>|]/g,'').trim();
+ const jobs=[];
+ for(const sid of ids){
+  const s=CAT.series.find(x=>x.id===sid);if(!s)continue;
+  st.textContent=`讀取照片清單 ${sid}`;
+  if(!GAL[sid]){try{GAL[sid]=(await get('action=gallery&series='+encodeURIComponent(sid))).images||[]}catch(e){GAL[sid]=[]}}
+  const folder=`${safe(s.cat||'其他')}/${safe(s.id+'_'+s.name)}`;
+  ordered(s,GAL[sid]).forEach((p,k)=>jobs.push({src:p,path:`${folder}/${safe(s.id)}_${String(k+1).padStart(2,'0')}.jpg`,label:`${s.name} 第 ${k+1} 張`}));
+  s.items.forEach(it=>{if(it.img)jobs.push({src:it.img,path:`品編/${safe(it.sku)}.jpg`,label:it.sku})});
+ }
+ const ext=[...new Set(jobs.map(j=>j.src).filter(x=>/^https?:/.test(x)))];
+ for(let i=0;i<ext.length;i+=4){
+  st.textContent=`下載外站圖片 ${Math.min(i+4,ext.length)}/${ext.length}`;
+  try{const r=await post({action:'admin_img',password:pw,urls:ext.slice(i,i+4)});
+   for(const g of r.images||[]){if(g.data){const bin=atob(g.data);const u8=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)u8[k]=bin.charCodeAt(k);done[g.url]=URL.createObjectURL(new Blob([u8],{type:g.type||'image/jpeg'}))}}
+  }catch(e){st.textContent=e.message;btn.disabled=false;return}
+ }
+ const conv={};
+ for(let k=0;k<jobs.length;k++){
+  const j=jobs[k];st.textContent=`轉成 JPG ${k+1}/${jobs.length}`;
+  try{
+   if(!conv[j.src]){const isExt=/^https?:/.test(j.src);if(isExt&&!done[j.src])throw new Error('x');conv[j.src]=blobToJpg(isExt?done[j.src]:`https://lh3.googleusercontent.com/d/${encodeURIComponent(j.src)}=s0`,size,isExt)}
+   zip.file(j.path,await conv[j.src]);n++;
+  }catch(e){fail.push(j.label)}
+ }
+ st.textContent='壓縮中';
+ const blob=await zip.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+ const d=new Date();a.download=`家具圖片_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.zip`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+ st.textContent=`完成，共 ${n} 張${fail.length?`；${fail.length} 張無法下載：${fail.slice(0,5).join('、')}${fail.length>5?'…':''}`:''}`;btn.disabled=false;
 }
 function alertErr(m){const p=document.createElement('p');p.className='err';p.textContent=m;$('#app .wrap').prepend(p)}
 
