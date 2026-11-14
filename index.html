@@ -219,9 +219,11 @@ try{cart=JSON.parse(localStorage.getItem('kb_cart')||'[]')}catch(e){}
 const saveCart=()=>{try{localStorage.setItem('kb_cart',JSON.stringify(cart))}catch(e){}};
 const dlg=$('#dlg');
 
+/* 試算表貼的雲端圖片網址（lh3.google.com/u/0/d/…、drive.google.com/file/d/… 等）只有登入的人看得到，轉成檔案 ID 統一處理 */
+const driveId=u=>{const m=String(u||'').match(/^https?:\/\/(?:lh3\.google(?:usercontent)?\.com\/(?:u\/\d+\/)?d\/|drive\.google\.com\/(?:u\/\d+\/)?(?:file\/d\/|open\?id=|uc\?(?:export=\w+&)?id=|thumbnail\?id=))([\w-]{20,})/);return m?m[1]:u};
 async function get(q){const r=await fetch(API_URL+'?'+q);const j=await r.json();if(j.error)throw new Error(j.error);
  /* 同一系列的款式依售價由低到高排序；同價維持試算表順序 */
- if(Array.isArray(j.series))j.series.forEach(s=>s.items.sort((x,y)=>x.price-y.price));return j}
+ if(Array.isArray(j.series))j.series.forEach(s=>{s.items.forEach(i=>{if(i.img)i.img=driveId(i.img)});if(s.cover)s.cover=driveId(s.cover);if(Array.isArray(s.order))s.order=[...new Set(s.order.map(driveId))];s.items.sort((x,y)=>x.price-y.price)});return j}
 async function post(b){const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(b)});const j=await r.json();if(j.error)throw new Error(j.error);return j}
 const shownPrice=i=>STAFF?i.staff:i.price;
 const skuMap=()=>Object.fromEntries(DATA.series.flatMap(s=>s.items.map(i=>[i.sku,{...i,series:s}])));
