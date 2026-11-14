@@ -126,6 +126,7 @@ td input{width:76px;text-align:right}
 .sh-title h2{font-size:23pt;color:var(--head);letter-spacing:.04em}
 .sh-title span{font-size:10.5pt;color:var(--soft);letter-spacing:.04em;white-space:nowrap}
 .sh-main{height:112mm;background:var(--paper)}
+.sh-main.two{display:grid;grid-template-columns:1fr 1fr;gap:3mm;background:none}.sh-main.two>div{height:100%;background:var(--paper)}.sh-main.two img{width:100%;height:100%;object-fit:cover;display:block}
 .sh-main img,.sh-thumbs img{width:100%;height:100%;object-fit:cover;display:block}
 .sh-thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin-top:3mm;height:38mm}
 .sh-thumbs div{background:var(--paper);overflow:hidden}.sh-thumbs div:empty{background:none}
@@ -565,7 +566,10 @@ function slot(key,series,id,w,cls=''){
 function seriesPage(s,pageNo,showStaff,cats){
  const key='S_'+s.id,c=CFG[key]||{};
  const main=c.main||coverOf(s);
- const auto=ordered(s,PD.gals[s.id]).filter(p=>p!==main);
+ const nM=c.mainN===2?2:1;
+ const pool=ordered(s,PD.gals[s.id]).filter(p=>p!==main);
+ const main2=nM===2?(c.main2!=null?c.main2:pool[0]):null;
+ const auto=pool.filter(p=>p!==main2);
  const nT=[3,4,5].includes(c.layout)?c.layout:3;
  const th=Array.from({length:nT},(_,n)=>c.thumbs&&c.thumbs[n]!=null?c.thumbs[n]:auto[n]);
  const showThumbs=EDIT||th.some(t=>t&&t!=='-');
@@ -577,9 +581,9 @@ function seriesPage(s,pageNo,showStaff,cats){
  const head=`<tr><th>款式</th>${preCol?'<th>預購</th>':''}<th class="n">售價</th>${showStaff?'<th class="n">員工價</th>':''}</tr>`;
  const split=rows.length>6;const half=Math.ceil(rows.length/2);
  const tables=split?[rows.slice(0,half),rows.slice(half)]:[rows];
- return `<section class="sheet" data-key="${key}">${catTabs(cats,s.cat)}${EDIT?`<button class="resetpage" data-reset-page="${key}">還原此頁</button><label class="layoutsel">版型 <select data-layout="${key}">${[3,4,5].map(v=>`<option value="${v}" ${v===nT?'selected':''}>首圖＋${v} 張小圖</option>`).join('')}</select></label>`:''}<div class="sh-top"><b>YUNGMEI LIVING 永美家居</b><span>家具型錄｜${esc(s.cat)}</span></div>
+ return `<section class="sheet" data-key="${key}">${catTabs(cats,s.cat)}${EDIT?`<button class="resetpage" data-reset-page="${key}">還原此頁</button><label class="layoutsel">版型 <select data-mainn="${key}">${[1,2].map(v=>`<option value="${v}" ${v===nM?'selected':''}>${v===1?'首圖 1 張（橫式）':'首圖 2 張（直式並排）'}</option>`).join('')}</select>＋<select data-layout="${key}">${[3,4,5].map(v=>`<option value="${v}" ${v===nT?'selected':''}>${v} 張小圖</option>`).join('')}</select></label>`:''}<div class="sh-top"><b>YUNGMEI LIVING 永美家居</b><span>家具型錄｜${esc(s.cat)}</span></div>
  <div class="sh-title"><h2 data-edit="${key}.name">${esc(c.name||s.name)}</h2><span>品編 ${esc(s.id)} 系列</span></div>
- ${slot(key+'.main',s.id,main,1600,'sh-main')}
+ ${nM===2?`<div class="sh-main two">${slot(key+'.main',s.id,main,1000)}${slot(key+'.main2',s.id,main2,1000)}</div>`:slot(key+'.main',s.id,main,1600,'sh-main')}
  ${showThumbs?`<div class="sh-thumbs" data-n="${nT}" style="grid-template-columns:repeat(${nT},1fr)">${th.map((t,n)=>slot(key+'.thumbs.'+n,s.id,t,700)).join('')}</div>`:''}
  <div class="sh-body"><div data-edit="${key}.left" data-html="1">${c.left!==undefined?cleanHtml(c.left):defLeft}</div><div data-edit="${key}.right" data-html="1">${c.right!==undefined?cleanHtml(c.right):defRight}</div></div>
  <div class="sh-table"><div class="ptabs${split?' cols2':''}">${tables.map(t=>`<table class="ptab">${head}${t.join('')}</table>`).join('')}</div></div>
@@ -636,6 +640,7 @@ function drawPrint(){
  document.querySelectorAll('[data-adj]').forEach(b=>b.onclick=e=>{e.stopPropagation();openAdjust(b.dataset.adj,b.parentElement)});
  document.querySelectorAll('[data-reset-page]').forEach(b=>b.onclick=()=>{const k=b.dataset.resetPage;CFG[k]=null;DIRTY.add(k);drawPrint()});
  document.querySelectorAll('[data-layout]').forEach(sl=>sl.onchange=()=>{const k=sl.dataset.layout,v=+sl.value;if(v===3)delete cfg(k).layout;else cfg(k).layout=v;DIRTY.add(k);drawPrint()});
+ document.querySelectorAll('[data-mainn]').forEach(sl=>sl.onchange=()=>{const k=sl.dataset.mainn,v=+sl.value,c=cfg(k);if(v===2)c.mainN=2;else{delete c.mainN;delete c.main2;if(c.pos)delete c.pos.main2}DIRTY.add(k);drawPrint()});
  $('#pdone').onclick=()=>{if(DIRTY.size&&!$('#perr').dataset.warned){$('#perr').textContent='還有未儲存的修改，再按一次「完成編輯」會放棄修改';$('#perr').hidden=false;$('#perr').dataset.warned='1';return}EDIT=false;DIRTY.clear();renderPrint()};
  $('#psave').onclick=async()=>{
   pw=$('#ppw').value;const er=$('#perr');er.hidden=true;
